@@ -1,153 +1,137 @@
-/* RESET */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>WebGIS PSU Jalan Kabupaten Ngawi</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<div class="header">
+    <h1>WebGIS PSU Jalan</h1>
+    <p>Kabupaten Ngawi</p>
+    <span>Dibuat oleh: Erwin Ermaningsih | Tugas Latsar CPNS</span>
+</div>
+
+<div id="map"></div>
+
+<!-- INFO PANEL -->
+<div id="info-panel" class="info-panel">
+    <div class="info-header">
+        <span>Informasi Jalan PSU</span>
+        <button id="close-info">✕</button>
+    </div>
+    <div id="info-content">
+        Klik salah satu ruas jalan untuk melihat detail.
+    </div>
+</div>
+
+<!-- LEGEND TENGAH BAWAH -->
+<div class="legend">
+    <h4>Jalan PSU</h4>
+    <span class="legend-line"></span>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+
+var map = L.map('map').setView(
+    [-7.4, 111.4],
+    window.innerWidth < 768 ? 13 : 11
+);
+
+// Basemap
+var osm = L.tileLayer(
+    'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+    { attribution: '&copy; OpenStreetMap' }
+);
+
+var esriSat = L.tileLayer(
+    'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+    { attribution: 'Tiles © Esri' }
+).addTo(map);
+
+L.control.layers({
+    "OpenStreetMap": osm,
+    "Satelit": esriSat
+}).addTo(map);
+
+// Style jalan
+function style(feature) {
+    return {
+        color: "#06b6d4",
+        weight: window.innerWidth < 768 ? 9 : 6,
+        opacity: 1
+    };
 }
 
-body {
-    font-family: 'Segoe UI', sans-serif;
-    background: linear-gradient(to bottom, #e6f4f1, #f8fbfa);
+function onEachFeature(feature, layer) {
+
+    // Tooltip nama jalan (ganti field sesuai GeoJSON kamu)
+    var namaJalan = feature.properties.Nama ||
+                    feature.properties.nama ||
+                    feature.properties.NAMA ||
+                    "Jalan PSU";
+
+    layer.bindTooltip(namaJalan, {
+        permanent: true,
+        direction: "center",
+        className: "label-jalan"
+    });
+
+    layer.on('click', function () {
+
+        var content = "<b style='color:#0f766e;'>Data Jalan PSU</b><br><br>";
+
+        for (var key in feature.properties) {
+            content += "<b>" + key + "</b>: " + feature.properties[key] + "<br>";
+        }
+
+        document.getElementById("info-content").innerHTML = content;
+        document.getElementById("info-panel").classList.remove("hidden");
+    });
 }
 
-/* HEADER */
-.header {
-    text-align: center;
-    padding: 20px;
-    background: linear-gradient(135deg, #0f766e, #14b8a6);
-    color: white;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.25);
-}
+// Load GeoJSON
+fetch("Jalan.geojson")
+.then(response => response.json())
+.then(data => {
 
-.header h1 {
-    font-size: 26px;
-    font-weight: 600;
-}
+    // Outline agar kontras
+    L.geoJSON(data, {
+        style: {
+            color: "#000",
+            weight: window.innerWidth < 768 ? 12 : 8,
+            opacity: 0.35
+        }
+    }).addTo(map);
 
-.header p {
-    margin-top: 6px;
-    font-size: 15px;
-}
+    var geojsonLayer = L.geoJSON(data, {
+        style: style,
+        onEachFeature: onEachFeature
+    }).addTo(map);
 
-.header span {
-    display: block;
-    margin-top: 5px;
-    font-size: 12px;
-    opacity: 0.85;
-}
+    map.fitBounds(geojsonLayer.getBounds());
+});
 
-/* MAP */
-#map {
-    height: 85vh;
-    width: 100%;
-}
+// Tombol X
+document.getElementById("close-info").addEventListener("click", function () {
+    document.getElementById("info-panel").classList.add("hidden");
+});
 
-/* INFO PANEL */
-.info-panel {
-    position: absolute;
-    top: 120px;
-    left: 20px;
-    width: 300px;
-    background: white;
-    border-radius: 14px;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.3);
-    z-index: 999;
-    overflow: hidden;
-}
+// Fix resize mobile
+window.addEventListener("resize", function () {
+    setTimeout(function () {
+        map.invalidateSize();
+    }, 200);
+});
 
-.info-header {
-    background: linear-gradient(135deg, #0f766e, #14b8a6);
-    color: white;
-    padding: 10px 12px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 14px;
-    font-weight: 600;
-}
+</script>
 
-#close-info {
-    background: transparent;
-    border: none;
-    color: white;
-    font-size: 16px;
-    cursor: pointer;
-}
-
-#info-content {
-    padding: 12px;
-    font-size: 13px;
-    max-height: 250px;
-    overflow-y: auto;
-}
-
-.hidden {
-    display: none;
-}
-
-/* LEGEND - POSISI ATAS */
-.legend {
-    position: absolute;
-    top: 120px;
-    right: 20px;
-    background: white;
-    padding: 14px 18px;
-    border-radius: 14px;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.25);
-    font-size: 13px;
-    z-index: 999;
-}
-
-.legend h4 {
-    margin-bottom: 8px;
-    color: #0f766e;
-}
-
-.legend-line {
-    display: inline-block;
-    width: 32px;
-    height: 6px;
-    background: #06b6d4;
-    margin-right: 8px;
-    border-radius: 4px;
-    box-shadow: 0 0 10px rgba(6,182,212,0.6);
-}
-
-/* LEAFLET CUSTOM */
-.leaflet-control-layers {
-    border-radius: 12px !important;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-}
-
-.leaflet-popup-content-wrapper {
-    border-radius: 12px;
-}
-
-.leaflet-control-zoom a {
-    border-radius: 8px !important;
-}
-
-/* RESPONSIVE */
-@media (max-width: 768px) {
-
-    #map {
-        height: 80vh;
-    }
-
-    .header h1 {
-        font-size: 20px;
-    }
-
-    .info-panel {
-        width: 90%;
-        left: 5%;
-        top: 110px;
-    }
-
-    .legend {
-        top: 100px;
-        right: 10px;
-        font-size: 11px;
-        padding: 10px 14px;
-    }
-}
+</body>
+</html>
