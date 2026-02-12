@@ -1,4 +1,4 @@
-/* ================= RESET ================= */
+/* RESET */
 * {
     margin: 0;
     padding: 0;
@@ -10,7 +10,7 @@ html, body {
     font-family: 'Segoe UI', sans-serif;
 }
 
-/* ================= HEADER ================= */
+/* HEADER */
 .header {
     text-align: center;
     padding: 18px;
@@ -18,28 +18,17 @@ html, body {
     color: white;
 }
 
-.header h1 {
-    font-size: 24px;
-}
+.header h1 { font-size: 24px; }
+.header p { margin-top: 5px; font-size: 14px; }
+.header span { font-size: 12px; }
 
-.header p {
-    margin-top: 5px;
-    font-size: 14px;
-}
-
-.header span {
-    font-size: 12px;
-    opacity: 0.9;
-}
-
-/* ================= MAP (WAJIB ADA HEIGHT) ================= */
-/* Ini penyebab utama map putih kalau tidak ada */
+/* MAP */
 #map {
     width: 100%;
     height: calc(100vh - 100px);
 }
 
-/* ================= INFO PANEL ================= */
+/* INFO PANEL */
 .info-panel {
     position: absolute;
     top: 110px;
@@ -58,7 +47,6 @@ html, body {
     padding: 10px;
     display: flex;
     justify-content: space-between;
-    align-items: center;
 }
 
 #close-info {
@@ -69,10 +57,6 @@ html, body {
     cursor: pointer;
 }
 
-#close-info:hover {
-    opacity: 0.7;
-}
-
 #info-content {
     padding: 12px;
     font-size: 13px;
@@ -80,11 +64,9 @@ html, body {
     overflow-y: auto;
 }
 
-.hidden {
-    display: none;
-}
+.hidden { display: none; }
 
-/* ================= LABEL JALAN ================= */
+/* LABEL JALAN */
 .label-jalan {
     background: #0f766e;
     color: white;
@@ -95,7 +77,7 @@ html, body {
     box-shadow: 0 3px 10px rgba(0,0,0,0.3);
 }
 
-/* ================= LEGEND TENGAH BAWAH ================= */
+/* LEGEND TENGAH BAWAH */
 .legend {
     position: absolute;
     bottom: 25px;
@@ -119,16 +101,7 @@ html, body {
     border-radius: 4px;
 }
 
-/* ================= LEAFLET CONTROL ================= */
-.leaflet-control-layers {
-    border-radius: 10px !important;
-}
-
-.leaflet-control-zoom a {
-    border-radius: 8px !important;
-}
-
-/* ================= RESPONSIVE MOBILE ================= */
+/* RESPONSIVE */
 @media (max-width: 768px) {
 
     #map {
