@@ -10,35 +10,48 @@ html, body {
     font-family: 'Segoe UI', sans-serif;
 }
 
+/* BODY FLEX SUPAYA MAP SELALU ADA */
+body {
+    display: flex;
+    flex-direction: column;
+}
+
 /* HEADER */
 .header {
-    text-align: center;
-    padding: 18px;
+    padding: 20px;
     background: linear-gradient(135deg, #0f766e, #14b8a6);
     color: white;
 }
 
-.header h1 { font-size: 24px; }
-.header p { margin-top: 5px; font-size: 14px; }
-.header span { font-size: 12px; }
+.header h1 {
+    font-size: 24px;
+}
 
-/* MAP */
+.header p {
+    margin-top: 5px;
+    font-size: 14px;
+}
+
+.header span {
+    font-size: 12px;
+}
+
+/* MAP FIX UTAMA */
 #map {
+    flex: 1; /* ini kuncinya */
     width: 100%;
-    height: calc(100vh - 100px);
 }
 
 /* INFO PANEL */
 .info-panel {
     position: absolute;
-    top: 110px;
+    top: 120px;
     left: 20px;
     width: 300px;
     background: white;
     border-radius: 12px;
     box-shadow: 0 6px 20px rgba(0,0,0,0.3);
     z-index: 999;
-    overflow: hidden;
 }
 
 .info-header {
@@ -49,64 +62,47 @@ html, body {
     justify-content: space-between;
 }
 
-#close-info {
-    background: transparent;
-    border: none;
-    color: white;
-    font-size: 16px;
-    cursor: pointer;
-}
-
 #info-content {
     padding: 12px;
     font-size: 13px;
-    max-height: 250px;
-    overflow-y: auto;
 }
 
-.hidden { display: none; }
-
-/* LABEL JALAN */
-.label-jalan {
-    background: #0f766e;
-    color: white;
-    font-size: 11px;
-    padding: 3px 8px;
-    border-radius: 20px;
-    font-weight: 500;
-    box-shadow: 0 3px 10px rgba(0,0,0,0.3);
+.hidden {
+    display: none;
 }
 
-/* LEGEND TENGAH BAWAH */
+/* LEGEND */
 .legend {
     position: absolute;
-    bottom: 25px;
+    bottom: 20px;
     left: 50%;
     transform: translateX(-50%);
     background: white;
-    padding: 10px 20px;
-    border-radius: 30px;
+    padding: 8px 20px;
+    border-radius: 25px;
     box-shadow: 0 6px 15px rgba(0,0,0,0.25);
-    font-size: 13px;
     z-index: 999;
-    display: flex;
-    align-items: center;
-    gap: 8px;
 }
 
 .legend-line {
     width: 30px;
     height: 6px;
     background: #06b6d4;
+    display: inline-block;
     border-radius: 4px;
 }
 
-/* RESPONSIVE */
-@media (max-width: 768px) {
+/* LABEL */
+.label-jalan {
+    background: #0f766e;
+    color: white;
+    font-size: 11px;
+    padding: 3px 8px;
+    border-radius: 20px;
+}
 
-    #map {
-        height: calc(100vh - 90px);
-    }
+/* MOBILE */
+@media (max-width: 768px) {
 
     .header h1 {
         font-size: 18px;
@@ -117,17 +113,6 @@ html, body {
         left: 2.5%;
         top: auto;
         bottom: 80px;
-        max-height: 40vh;
     }
 
-    .legend {
-        bottom: 15px;
-        font-size: 11px;
-        padding: 8px 14px;
-    }
-
-    .label-jalan {
-        font-size: 9px;
-        padding: 2px 6px;
-    }
 }
