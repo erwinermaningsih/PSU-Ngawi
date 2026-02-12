@@ -1,137 +1,160 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-<meta charset="UTF-8">
-<title>WebGIS PSU Jalan Kabupaten Ngawi</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-<link rel="stylesheet" href="style.css">
-</head>
-
-<body>
-
-<div class="header">
-    <h1>WebGIS PSU Jalan</h1>
-    <p>Kabupaten Ngawi</p>
-    <span>Dibuat oleh: Erwin Ermaningsih | Tugas Latsar CPNS</span>
-</div>
-
-<div id="map"></div>
-
-<!-- INFO PANEL -->
-<div id="info-panel" class="info-panel">
-    <div class="info-header">
-        <span>Informasi Jalan PSU</span>
-        <button id="close-info">✕</button>
-    </div>
-    <div id="info-content">
-        Klik salah satu ruas jalan untuk melihat detail.
-    </div>
-</div>
-
-<!-- LEGEND TENGAH BAWAH -->
-<div class="legend">
-    <h4>Jalan PSU</h4>
-    <span class="legend-line"></span>
-</div>
-
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
-<script>
-
-var map = L.map('map').setView(
-    [-7.4, 111.4],
-    window.innerWidth < 768 ? 13 : 11
-);
-
-// Basemap
-var osm = L.tileLayer(
-    'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-    { attribution: '&copy; OpenStreetMap' }
-);
-
-var esriSat = L.tileLayer(
-    'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-    { attribution: 'Tiles © Esri' }
-).addTo(map);
-
-L.control.layers({
-    "OpenStreetMap": osm,
-    "Satelit": esriSat
-}).addTo(map);
-
-// Style jalan
-function style(feature) {
-    return {
-        color: "#06b6d4",
-        weight: window.innerWidth < 768 ? 9 : 6,
-        opacity: 1
-    };
+/* ================= RESET ================= */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
 
-function onEachFeature(feature, layer) {
-
-    // Tooltip nama jalan (ganti field sesuai GeoJSON kamu)
-    var namaJalan = feature.properties.Nama ||
-                    feature.properties.nama ||
-                    feature.properties.NAMA ||
-                    "Jalan PSU";
-
-    layer.bindTooltip(namaJalan, {
-        permanent: true,
-        direction: "center",
-        className: "label-jalan"
-    });
-
-    layer.on('click', function () {
-
-        var content = "<b style='color:#0f766e;'>Data Jalan PSU</b><br><br>";
-
-        for (var key in feature.properties) {
-            content += "<b>" + key + "</b>: " + feature.properties[key] + "<br>";
-        }
-
-        document.getElementById("info-content").innerHTML = content;
-        document.getElementById("info-panel").classList.remove("hidden");
-    });
+html, body {
+    height: 100%;
+    font-family: 'Segoe UI', sans-serif;
 }
 
-// Load GeoJSON
-fetch("Jalan.geojson")
-.then(response => response.json())
-.then(data => {
+/* ================= HEADER ================= */
+.header {
+    text-align: center;
+    padding: 18px;
+    background: linear-gradient(135deg, #0f766e, #14b8a6);
+    color: white;
+}
 
-    // Outline agar kontras
-    L.geoJSON(data, {
-        style: {
-            color: "#000",
-            weight: window.innerWidth < 768 ? 12 : 8,
-            opacity: 0.35
-        }
-    }).addTo(map);
+.header h1 {
+    font-size: 24px;
+}
 
-    var geojsonLayer = L.geoJSON(data, {
-        style: style,
-        onEachFeature: onEachFeature
-    }).addTo(map);
+.header p {
+    margin-top: 5px;
+    font-size: 14px;
+}
 
-    map.fitBounds(geojsonLayer.getBounds());
-});
+.header span {
+    font-size: 12px;
+    opacity: 0.9;
+}
 
-// Tombol X
-document.getElementById("close-info").addEventListener("click", function () {
-    document.getElementById("info-panel").classList.add("hidden");
-});
+/* ================= MAP (WAJIB ADA HEIGHT) ================= */
+/* Ini penyebab utama map putih kalau tidak ada */
+#map {
+    width: 100%;
+    height: calc(100vh - 100px);
+}
 
-// Fix resize mobile
-window.addEventListener("resize", function () {
-    setTimeout(function () {
-        map.invalidateSize();
-    }, 200);
-});
+/* ================= INFO PANEL ================= */
+.info-panel {
+    position: absolute;
+    top: 110px;
+    left: 20px;
+    width: 300px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+    z-index: 999;
+    overflow: hidden;
+}
 
-</script>
+.info-header {
+    background: #0f766e;
+    color: white;
+    padding: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
 
-</body>
-</html>
+#close-info {
+    background: transparent;
+    border: none;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+#close-info:hover {
+    opacity: 0.7;
+}
+
+#info-content {
+    padding: 12px;
+    font-size: 13px;
+    max-height: 250px;
+    overflow-y: auto;
+}
+
+.hidden {
+    display: none;
+}
+
+/* ================= LABEL JALAN ================= */
+.label-jalan {
+    background: #0f766e;
+    color: white;
+    font-size: 11px;
+    padding: 3px 8px;
+    border-radius: 20px;
+    font-weight: 500;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.3);
+}
+
+/* ================= LEGEND TENGAH BAWAH ================= */
+.legend {
+    position: absolute;
+    bottom: 25px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: white;
+    padding: 10px 20px;
+    border-radius: 30px;
+    box-shadow: 0 6px 15px rgba(0,0,0,0.25);
+    font-size: 13px;
+    z-index: 999;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.legend-line {
+    width: 30px;
+    height: 6px;
+    background: #06b6d4;
+    border-radius: 4px;
+}
+
+/* ================= LEAFLET CONTROL ================= */
+.leaflet-control-layers {
+    border-radius: 10px !important;
+}
+
+.leaflet-control-zoom a {
+    border-radius: 8px !important;
+}
+
+/* ================= RESPONSIVE MOBILE ================= */
+@media (max-width: 768px) {
+
+    #map {
+        height: calc(100vh - 90px);
+    }
+
+    .header h1 {
+        font-size: 18px;
+    }
+
+    .info-panel {
+        width: 95%;
+        left: 2.5%;
+        top: auto;
+        bottom: 80px;
+        max-height: 40vh;
+    }
+
+    .legend {
+        bottom: 15px;
+        font-size: 11px;
+        padding: 8px 14px;
+    }
+
+    .label-jalan {
+        font-size: 9px;
+        padding: 2px 6px;
+    }
+}
