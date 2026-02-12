@@ -6,7 +6,116 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-<link rel="stylesheet" href="style.css">
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', sans-serif;
+}
+
+/* HEADER */
+.header {
+    text-align: center;
+    padding: 18px;
+    background: linear-gradient(135deg, #0f766e, #14b8a6);
+    color: white;
+}
+
+.header h1 { font-size: 24px; }
+.header p { margin-top: 5px; font-size: 14px; }
+.header span { font-size: 12px; }
+
+/* MAP FIX WAJIB */
+#map {
+    width: 100%;
+    height: calc(100vh - 100px);
+}
+
+/* INFO PANEL */
+.info-panel {
+    position: absolute;
+    top: 110px;
+    left: 20px;
+    width: 300px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+    z-index: 999;
+}
+
+.info-header {
+    background: #0f766e;
+    color: white;
+    padding: 10px;
+    display: flex;
+    justify-content: space-between;
+}
+
+#close-info {
+    background: transparent;
+    border: none;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+#info-content {
+    padding: 12px;
+    font-size: 13px;
+}
+
+.hidden { display: none; }
+
+/* LEGEND TENGAH BAWAH */
+.legend {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: white;
+    padding: 10px 20px;
+    border-radius: 30px;
+    box-shadow: 0 6px 15px rgba(0,0,0,0.25);
+    z-index: 999;
+}
+
+.legend-line {
+    width: 30px;
+    height: 6px;
+    background: #06b6d4;
+    display: inline-block;
+    border-radius: 4px;
+}
+
+/* LABEL */
+.label-jalan {
+    background: #0f766e;
+    color: white;
+    font-size: 11px;
+    padding: 3px 8px;
+    border-radius: 20px;
+}
+
+/* MOBILE FIX */
+@media (max-width: 768px) {
+    #map {
+        height: calc(100vh - 90px);
+    }
+
+    .info-panel {
+        width: 95%;
+        left: 2.5%;
+        bottom: 80px;
+        top: auto;
+    }
+}
+</style>
+
 </head>
 
 <body>
@@ -19,7 +128,6 @@
 
 <div id="map"></div>
 
-<!-- INFO PANEL -->
 <div id="info-panel" class="info-panel">
     <div class="info-header">
         <span>Informasi Jalan PSU</span>
@@ -30,105 +138,59 @@
     </div>
 </div>
 
-<!-- LEGEND TENGAH BAWAH -->
 <div class="legend">
-    <h4>Jalan PSU</h4>
-    <span class="legend-line"></span>
+    Jalan PSU <span class="legend-line"></span>
 </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
 
-var map = L.map('map').setView(
-    [-7.4, 111.4],
-    window.innerWidth < 768 ? 13 : 11
-);
-
-// Basemap
-var osm = L.tileLayer(
-    'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-    { attribution: '&copy; OpenStreetMap' }
-);
+var map = L.map('map').setView([-7.4, 111.4], 12);
 
 var esriSat = L.tileLayer(
-    'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-    { attribution: 'Tiles © Esri' }
+'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+{ attribution: 'Tiles © Esri' }
 ).addTo(map);
 
-L.control.layers({
-    "OpenStreetMap": osm,
-    "Satelit": esriSat
-}).addTo(map);
-
-// Style jalan
-function style(feature) {
-    return {
-        color: "#06b6d4",
-        weight: window.innerWidth < 768 ? 9 : 6,
-        opacity: 1
-    };
-}
-
-function onEachFeature(feature, layer) {
-
-    // Tooltip nama jalan (ganti field sesuai GeoJSON kamu)
-    var namaJalan = feature.properties.Nama ||
-                    feature.properties.nama ||
-                    feature.properties.NAMA ||
-                    "Jalan PSU";
-
-    layer.bindTooltip(namaJalan, {
-        permanent: true,
-        direction: "center",
-        className: "label-jalan"
-    });
-
-    layer.on('click', function () {
-
-        var content = "<b style='color:#0f766e;'>Data Jalan PSU</b><br><br>";
-
-        for (var key in feature.properties) {
-            content += "<b>" + key + "</b>: " + feature.properties[key] + "<br>";
-        }
-
-        document.getElementById("info-content").innerHTML = content;
-        document.getElementById("info-panel").classList.remove("hidden");
-    });
-}
-
-// Load GeoJSON
 fetch("Jalan.geojson")
 .then(response => response.json())
 .then(data => {
 
-    // Outline agar kontras
     L.geoJSON(data, {
-        style: {
-            color: "#000",
-            weight: window.innerWidth < 768 ? 12 : 8,
-            opacity: 0.35
+        style: { color:"#000", weight:8, opacity:0.3 }
+    }).addTo(map);
+
+    L.geoJSON(data, {
+        style: { color:"#06b6d4", weight:6 },
+        onEachFeature: function(feature, layer) {
+
+            var nama = feature.properties.Nama || "Jalan PSU";
+
+            layer.bindTooltip(nama, {
+                permanent:true,
+                direction:"center",
+                className:"label-jalan"
+            });
+
+            layer.on('click', function() {
+                var content = "<b>Data Jalan PSU</b><br><br>";
+                for (var key in feature.properties) {
+                    content += "<b>"+key+"</b>: "+feature.properties[key]+"<br>";
+                }
+                document.getElementById("info-content").innerHTML = content;
+                document.getElementById("info-panel").classList.remove("hidden");
+            });
         }
     }).addTo(map);
-
-    var geojsonLayer = L.geoJSON(data, {
-        style: style,
-        onEachFeature: onEachFeature
-    }).addTo(map);
-
-    map.fitBounds(geojsonLayer.getBounds());
 });
 
-// Tombol X
-document.getElementById("close-info").addEventListener("click", function () {
+document.getElementById("close-info").onclick = function(){
     document.getElementById("info-panel").classList.add("hidden");
-});
+};
 
-// Fix resize mobile
-window.addEventListener("resize", function () {
-    setTimeout(function () {
-        map.invalidateSize();
-    }, 200);
+window.addEventListener("resize", function(){
+    setTimeout(function(){ map.invalidateSize(); },200);
 });
 
 </script>
