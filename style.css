@@ -1,0 +1,57 @@
+body {
+    margin: 0;
+    font-family: 'Segoe UI', sans-serif;
+    background-color: #f4f6f9;
+}
+
+.header {
+    text-align: center;
+    padding: 15px;
+    background: linear-gradient(135deg, #004aad, #0077ff);
+    color: white;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+
+.header h1 {
+    margin: 0;
+    font-size: 24px;
+}
+
+.header p {
+    margin: 5px 0;
+    font-size: 16px;
+}
+
+.header span {
+    font-size: 12px;
+    opacity: 0.8;
+}
+
+#map {
+    height: 85vh;
+    width: 100%;
+}
+
+.legend {
+    position: absolute;
+    bottom: 30px;
+    right: 20px;
+    background: white;
+    padding: 10px 15px;
+    border-radius: 8px;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.2);
+    font-size: 13px;
+}
+
+.legend h4 {
+    margin: 0 0 5px 0;
+}
+
+.legend-line {
+    display: inline-block;
+    width: 25px;
+    height: 4px;
+    background: #0077ff;
+    margin-right: 8px;
+    vertical-align: middle;
+}
