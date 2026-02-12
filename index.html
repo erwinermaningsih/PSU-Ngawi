@@ -1,16 +1,14 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <title>WebGIS PSU Jalan Kabupaten Ngawi</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<title>WebGIS PSU Jalan Kabupaten Ngawi</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <!-- Leaflet CSS -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-
-    <!-- Custom CSS -->
-    <link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<link rel="stylesheet" href="style.css">
 </head>
+
 <body>
 
 <div class="header">
@@ -32,84 +30,107 @@
     </div>
 </div>
 
-<!-- LEGEND -->
+<!-- LEGEND TENGAH BAWAH -->
 <div class="legend">
-    <h4>Legenda</h4>
-    <div><span class="legend-line"></span> Jalan PSU</div>
+    <h4>Jalan PSU</h4>
+    <span class="legend-line"></span>
 </div>
 
-<!-- Leaflet JS -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
-    var map = L.map('map').setView([-7.4, 111.4], 11);
 
-    // Basemap OSM
-    var osm = L.tileLayer(
-        'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; OpenStreetMap'
+var map = L.map('map').setView(
+    [-7.4, 111.4],
+    window.innerWidth < 768 ? 13 : 11
+);
+
+// Basemap
+var osm = L.tileLayer(
+    'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+    { attribution: '&copy; OpenStreetMap' }
+);
+
+var esriSat = L.tileLayer(
+    'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+    { attribution: 'Tiles © Esri' }
+).addTo(map);
+
+L.control.layers({
+    "OpenStreetMap": osm,
+    "Satelit": esriSat
+}).addTo(map);
+
+// Style jalan
+function style(feature) {
+    return {
+        color: "#06b6d4",
+        weight: window.innerWidth < 768 ? 9 : 6,
+        opacity: 1
+    };
+}
+
+function onEachFeature(feature, layer) {
+
+    // Tooltip nama jalan (ganti field sesuai GeoJSON kamu)
+    var namaJalan = feature.properties.Nama ||
+                    feature.properties.nama ||
+                    feature.properties.NAMA ||
+                    "Jalan PSU";
+
+    layer.bindTooltip(namaJalan, {
+        permanent: true,
+        direction: "center",
+        className: "label-jalan"
     });
 
-    // Basemap Satelit (Default)
-    var esriSat = L.tileLayer(
-        'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-        attribution: 'Tiles © Esri'
-    }).addTo(map);
+    layer.on('click', function () {
 
-    L.control.layers({
-        "OpenStreetMap": osm,
-        "Satelit": esriSat
-    }).addTo(map);
+        var content = "<b style='color:#0f766e;'>Data Jalan PSU</b><br><br>";
 
-    // Style jalan (responsif)
-    function style(feature) {
-        return {
-            color: "#06b6d4",
-            weight: window.innerWidth < 768 ? 8 : 6,
-            opacity: 1
-        };
-    }
+        for (var key in feature.properties) {
+            content += "<b>" + key + "</b>: " + feature.properties[key] + "<br>";
+        }
 
-    function onEachFeature(feature, layer) {
-        layer.on('click', function () {
-
-            var content = "<b style='color:#0f766e;'>Data Jalan PSU</b><br><br>";
-
-            for (var key in feature.properties) {
-                content += "<b>" + key + "</b>: " + feature.properties[key] + "<br>";
-            }
-
-            document.getElementById("info-content").innerHTML = content;
-            document.getElementById("info-panel").classList.remove("hidden");
-        });
-    }
-
-    fetch("Jalan.geojson")
-        .then(response => response.json())
-        .then(data => {
-
-            // Outline hitam tipis agar kontras
-            L.geoJSON(data, {
-                style: {
-                    color: "#000",
-                    weight: window.innerWidth < 768 ? 10 : 8,
-                    opacity: 0.4
-                }
-            }).addTo(map);
-
-            // Layer utama
-            var geojsonLayer = L.geoJSON(data, {
-                style: style,
-                onEachFeature: onEachFeature
-            }).addTo(map);
-
-            map.fitBounds(geojsonLayer.getBounds());
-        });
-
-    // Tombol X untuk tutup panel
-    document.getElementById("close-info").addEventListener("click", function () {
-        document.getElementById("info-panel").classList.add("hidden");
+        document.getElementById("info-content").innerHTML = content;
+        document.getElementById("info-panel").classList.remove("hidden");
     });
+}
+
+// Load GeoJSON
+fetch("Jalan.geojson")
+.then(response => response.json())
+.then(data => {
+
+    // Outline agar kontras
+    L.geoJSON(data, {
+        style: {
+            color: "#000",
+            weight: window.innerWidth < 768 ? 12 : 8,
+            opacity: 0.35
+        }
+    }).addTo(map);
+
+    var geojsonLayer = L.geoJSON(data, {
+        style: style,
+        onEachFeature: onEachFeature
+    }).addTo(map);
+
+    map.fitBounds(geojsonLayer.getBounds());
+});
+
+// Tombol X
+document.getElementById("close-info").addEventListener("click", function () {
+    document.getElementById("info-panel").classList.add("hidden");
+});
+
+// Fix resize mobile
+window.addEventListener("resize", function () {
+    setTimeout(function () {
+        map.invalidateSize();
+    }, 200);
+});
+
 </script>
 
 </body>
