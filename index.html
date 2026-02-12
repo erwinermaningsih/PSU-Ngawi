@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>WebGIS PSU Jalan Kabupaten Ngawi</title>
+
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="header">
+        <h1>WebGIS PSU Jalan</h1>
+        <p>Kabupaten Ngawi</p>
+        <span>Dibuat oleh: Erwin Ermaningsih</span>
+    </div>
+
+    <div id="map"></div>
+
+    <div class="legend">
+        <h4>Legenda</h4>
+        <div><span class="legend-line"></span> Jalan PSU</div>
+    </div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <script>
+        // Inisialisasi Peta
+        var map = L.map('map').setView([-7.4, 111.4], 11);
+
+        // Basemap
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap'
+        }).addTo(map);
+
+        // Style GeoJSON
+        function style(feature) {
+            return {
+                color: "#0077ff",
+                weight: 4,
+                opacity: 0.9
+            };
+        }
+
+        // Popup
+        function onEachFeature(feature, layer) {
+            if (feature.properties) {
+                var popupContent = "<b>Data Jalan</b><br>";
+                for (var key in feature.properties) {
+                    popupContent += key + ": " + feature.properties[key] + "<br>";
+                }
+                layer.bindPopup(popupContent);
+            }
+        }
+
+        // Load GeoJSON
+        fetch("Jalan.geojson")
+            .then(response => response.json())
+            .then(data => {
+                var geojsonLayer = L.geoJSON(data, {
+                    style: style,
+                    onEachFeature: onEachFeature
+                }).addTo(map);
+
+                map.fitBounds(geojsonLayer.getBounds());
+            });
+    </script>
+
+</body>
+</html>
