@@ -7,15 +7,86 @@
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 
-    <!-- Custom CSS -->
-    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', sans-serif;
+            background: #eef3f2;
+        }
+
+        .header {
+            text-align: center;
+            padding: 18px;
+            background: linear-gradient(135deg, #0f766e, #14b8a6);
+            color: white;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 26px;
+            letter-spacing: 1px;
+        }
+
+        .header p {
+            margin: 6px 0;
+            font-size: 15px;
+            opacity: 0.9;
+        }
+
+        .header span {
+            font-size: 12px;
+            opacity: 0.85;
+        }
+
+        #map {
+            height: 85vh;
+            width: 100%;
+        }
+
+        .legend {
+            position: absolute;
+            bottom: 30px;
+            right: 20px;
+            background: white;
+            padding: 12px 16px;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.25);
+            font-size: 13px;
+            z-index: 999;
+        }
+
+        .legend h4 {
+            margin: 0 0 8px 0;
+            color: #0f766e;
+        }
+
+        .legend-line {
+            display: inline-block;
+            width: 30px;
+            height: 5px;
+            background: #06b6d4;
+            margin-right: 8px;
+            vertical-align: middle;
+            border-radius: 3px;
+        }
+
+        .leaflet-popup-content-wrapper {
+            border-radius: 10px;
+        }
+
+        .leaflet-control-layers {
+            border-radius: 10px !important;
+        }
+    </style>
 </head>
+
 <body>
 
     <div class="header">
         <h1>WebGIS PSU Jalan</h1>
         <p>Kabupaten Ngawi</p>
-        <span>Dibuat oleh: Erwin Ermaningsih</span>
+        <span>Dibuat oleh: Erwin Ermaningsih | Tugas Latsar CPNS</span>
     </div>
 
     <div id="map"></div>
@@ -29,35 +100,43 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     <script>
-        // Inisialisasi Peta
         var map = L.map('map').setView([-7.4, 111.4], 11);
 
-        // Basemap
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        // Basemap OpenStreetMap
+        var osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; OpenStreetMap'
+        });
+
+        // Basemap Satelit (Default)
+        var esriSat = L.tileLayer(
+            'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+            attribution: 'Tiles © Esri'
         }).addTo(map);
 
-        // Style GeoJSON
+        L.control.layers({
+            "OpenStreetMap": osm,
+            "Satelit": esriSat
+        }).addTo(map);
+
+        // Style Jalan (CYAN GLOW EFFECT)
         function style(feature) {
             return {
-                color: "#0077ff",
-                weight: 4,
-                opacity: 0.9
+                color: "#06b6d4",
+                weight: 6,
+                opacity: 1
             };
         }
 
-        // Popup
         function onEachFeature(feature, layer) {
             if (feature.properties) {
-                var popupContent = "<b>Data Jalan</b><br>";
+                var popupContent = "<b style='color:#0f766e;'>Data Jalan PSU</b><br>";
                 for (var key in feature.properties) {
-                    popupContent += key + ": " + feature.properties[key] + "<br>";
+                    popupContent += "<b>" + key + "</b>: " + feature.properties[key] + "<br>";
                 }
                 layer.bindPopup(popupContent);
             }
         }
 
-        // Load GeoJSON
         fetch("Jalan.geojson")
             .then(response => response.json())
             .then(data => {
