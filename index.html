@@ -3,122 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <title>WebGIS PSU Jalan Kabupaten Ngawi</title>
-
-    <!-- WAJIB untuk HP -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Segoe UI', sans-serif;
-            background: linear-gradient(to bottom, #e6f4f1, #f8fbfa);
-        }
-
-        /* HEADER */
-        .header {
-            text-align: center;
-            padding: 18px;
-            background: linear-gradient(135deg, #0f766e, #14b8a6);
-            color: white;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.25);
-        }
-
-        .header h1 {
-            font-size: 26px;
-            font-weight: 600;
-        }
-
-        .header p {
-            margin-top: 6px;
-            font-size: 15px;
-        }
-
-        .header span {
-            display: block;
-            margin-top: 5px;
-            font-size: 12px;
-            opacity: 0.85;
-        }
-
-        /* MAP */
-        #map {
-            height: 85vh;
-            width: 100%;
-        }
-
-        /* LEGEND */
-        .legend {
-            position: absolute;
-            bottom: 30px;
-            right: 20px;
-            background: white;
-            padding: 14px 18px;
-            border-radius: 14px;
-            box-shadow: 0 6px 18px rgba(0,0,0,0.25);
-            font-size: 13px;
-            z-index: 999;
-        }
-
-        .legend h4 {
-            margin-bottom: 8px;
-            color: #0f766e;
-        }
-
-        .legend-line {
-            display: inline-block;
-            width: 32px;
-            height: 6px;
-            background: #06b6d4;
-            margin-right: 8px;
-            border-radius: 4px;
-            box-shadow: 0 0 8px rgba(6, 182, 212, 0.6);
-        }
-
-        /* LEAFLET STYLE */
-        .leaflet-control-layers {
-            border-radius: 12px !important;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-        }
-
-        .leaflet-popup-content-wrapper {
-            border-radius: 12px;
-        }
-
-        .leaflet-control-zoom a {
-            border-radius: 8px !important;
-        }
-
-        /* RESPONSIVE HP */
-        @media (max-width: 768px) {
-
-            #map {
-                height: 80vh;
-            }
-
-            .header h1 {
-                font-size: 20px;
-            }
-
-            .header p {
-                font-size: 13px;
-            }
-
-            .legend {
-                font-size: 11px;
-                padding: 10px;
-            }
-        }
-    </style>
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
 
 <div class="header">
@@ -129,6 +21,18 @@
 
 <div id="map"></div>
 
+<!-- INFO PANEL -->
+<div id="info-panel" class="info-panel">
+    <div class="info-header">
+        <span>Informasi Jalan PSU</span>
+        <button id="close-info">✕</button>
+    </div>
+    <div id="info-content">
+        Klik salah satu ruas jalan untuk melihat detail.
+    </div>
+</div>
+
+<!-- LEGEND -->
 <div class="legend">
     <h4>Legenda</h4>
     <div><span class="legend-line"></span> Jalan PSU</div>
@@ -141,7 +45,8 @@
     var map = L.map('map').setView([-7.4, 111.4], 11);
 
     // Basemap OSM
-    var osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    var osm = L.tileLayer(
+        'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; OpenStreetMap'
     });
 
@@ -156,7 +61,7 @@
         "Satelit": esriSat
     }).addTo(map);
 
-    // Style utama (responsif HP)
+    // Style jalan (responsif)
     function style(feature) {
         return {
             color: "#06b6d4",
@@ -166,13 +71,17 @@
     }
 
     function onEachFeature(feature, layer) {
-        if (feature.properties) {
-            var popupContent = "<b style='color:#0f766e;'>Data Jalan PSU</b><br>";
+        layer.on('click', function () {
+
+            var content = "<b style='color:#0f766e;'>Data Jalan PSU</b><br><br>";
+
             for (var key in feature.properties) {
-                popupContent += "<b>" + key + "</b>: " + feature.properties[key] + "<br>";
+                content += "<b>" + key + "</b>: " + feature.properties[key] + "<br>";
             }
-            layer.bindPopup(popupContent);
-        }
+
+            document.getElementById("info-content").innerHTML = content;
+            document.getElementById("info-panel").classList.remove("hidden");
+        });
     }
 
     fetch("Jalan.geojson")
@@ -196,6 +105,11 @@
 
             map.fitBounds(geojsonLayer.getBounds());
         });
+
+    // Tombol X untuk tutup panel
+    document.getElementById("close-info").addEventListener("click", function () {
+        document.getElementById("info-panel").classList.add("hidden");
+    });
 </script>
 
 </body>
