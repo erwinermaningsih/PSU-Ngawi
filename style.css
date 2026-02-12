@@ -1,4 +1,4 @@
-/* ================= RESET ================= */
+/* RESET */
 * {
     margin: 0;
     padding: 0;
@@ -10,7 +10,7 @@ body {
     background: linear-gradient(to bottom, #e6f4f1, #f8fbfa);
 }
 
-/* ================= HEADER ================= */
+/* HEADER */
 .header {
     text-align: center;
     padding: 20px;
@@ -22,13 +22,11 @@ body {
 .header h1 {
     font-size: 26px;
     font-weight: 600;
-    letter-spacing: 1px;
 }
 
 .header p {
     margin-top: 6px;
     font-size: 15px;
-    opacity: 0.95;
 }
 
 .header span {
@@ -38,34 +36,71 @@ body {
     opacity: 0.85;
 }
 
-/* ================= MAP ================= */
+/* MAP */
 #map {
     height: 85vh;
     width: 100%;
 }
 
-/* ================= LEGEND ================= */
+/* INFO PANEL */
+.info-panel {
+    position: absolute;
+    top: 120px;
+    left: 20px;
+    width: 300px;
+    background: white;
+    border-radius: 14px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+    z-index: 999;
+    overflow: hidden;
+}
+
+.info-header {
+    background: linear-gradient(135deg, #0f766e, #14b8a6);
+    color: white;
+    padding: 10px 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+#close-info {
+    background: transparent;
+    border: none;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+#info-content {
+    padding: 12px;
+    font-size: 13px;
+    max-height: 250px;
+    overflow-y: auto;
+}
+
+.hidden {
+    display: none;
+}
+
+/* LEGEND - POSISI ATAS */
 .legend {
     position: absolute;
-    bottom: 30px;
+    top: 120px;
     right: 20px;
-    background: #ffffff;
+    background: white;
     padding: 14px 18px;
     border-radius: 14px;
     box-shadow: 0 8px 20px rgba(0,0,0,0.25);
     font-size: 13px;
     z-index: 999;
-    transition: 0.3s ease;
-}
-
-.legend:hover {
-    transform: translateY(-4px);
 }
 
 .legend h4 {
     margin-bottom: 8px;
     color: #0f766e;
-    font-weight: 600;
 }
 
 .legend-line {
@@ -74,70 +109,45 @@ body {
     height: 6px;
     background: #06b6d4;
     margin-right: 8px;
-    vertical-align: middle;
     border-radius: 4px;
     box-shadow: 0 0 10px rgba(6,182,212,0.6);
 }
 
-/* ================= LEAFLET CUSTOM ================= */
-
-/* Layer control lebih modern */
+/* LEAFLET CUSTOM */
 .leaflet-control-layers {
     border-radius: 12px !important;
     box-shadow: 0 4px 12px rgba(0,0,0,0.2);
 }
 
-/* Popup lebih clean */
 .leaflet-popup-content-wrapper {
     border-radius: 12px;
 }
 
-.leaflet-popup-tip {
-    background: white;
-}
-
-/* Zoom control lebih smooth */
 .leaflet-control-zoom a {
     border-radius: 8px !important;
 }
 
-/* Transisi saat hover */
-.leaflet-interactive {
-    transition: all 0.3s ease;
-}
-
-/* ================= RESPONSIVE HP ================= */
+/* RESPONSIVE */
 @media (max-width: 768px) {
 
     #map {
         height: 80vh;
     }
 
-    .header {
-        padding: 15px;
-    }
-
     .header h1 {
         font-size: 20px;
     }
 
-    .header p {
-        font-size: 13px;
-    }
-
-    .header span {
-        font-size: 11px;
+    .info-panel {
+        width: 90%;
+        left: 5%;
+        top: 110px;
     }
 
     .legend {
+        top: 100px;
+        right: 10px;
         font-size: 11px;
         padding: 10px 14px;
-        bottom: 20px;
-        right: 10px;
-    }
-
-    .legend-line {
-        width: 24px;
-        height: 5px;
     }
 }
