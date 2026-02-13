@@ -36,18 +36,18 @@
 
 <script>
 
-// INISIALISASI MAP (SOFT LIMIT)
+// MAP STABIL
 var map = L.map('map', {
     minZoom: 11,
     maxZoom: 19,
-    maxBoundsViscosity: 0.7
+    maxBoundsViscosity: 0.6
 }).setView([-7.4, 111.4], 12);
 
-// BASEMAP SATELIT TAJAM
+// BASEMAP OPENSTREETMAP
 L.tileLayer(
-'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
 {
-    attribution: 'Tiles © Esri',
+    attribution: '&copy; OpenStreetMap contributors',
     maxZoom: 19
 }).addTo(map);
 
@@ -105,14 +105,13 @@ fetch("Jalan.geojson")
     }).addTo(map);
 
     var bounds = geojsonLayer.getBounds();
-
     map.fitBounds(bounds, { padding:[20,20] });
 
-    // SOFT LIMIT (TIDAK NGUNCI)
+    // Soft limit supaya tidak terlalu jauh
     map.setMaxBounds(bounds.pad(0.5));
 });
 
-// TOMBOL CLOSE PANEL
+// CLOSE PANEL
 document.getElementById("close-info").onclick = function(){
 
     document.getElementById("info-panel").classList.add("hidden");
