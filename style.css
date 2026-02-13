@@ -1,104 +1,86 @@
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+html,body{
+margin:0;
+height:100%;
+font-family:Segoe UI;
 }
 
-html, body {
-    height: 100%;
-    font-family: 'Segoe UI', sans-serif;
+#map{
+height:100%;
 }
 
-body {
-    display: flex;
-    flex-direction: column;
+/* TOPBAR */
+.topbar{
+position:absolute;
+top:0;
+left:0;
+right:0;
+height:60px;
+background:#2c3e50;
+color:white;
+display:flex;
+justify-content:space-between;
+align-items:center;
+padding:0 15px;
+z-index:1000;
 }
 
-/* HEADER */
-.header {
-    padding: 18px;
-    background: linear-gradient(135deg, #0f766e, #14b8a6);
-    color: white;
+.left{
+display:flex;
+align-items:center;
 }
 
-/* MAP */
-#map {
-    flex: 1;
-    width: 100%;
+.logo{
+height:40px;
+margin-right:10px;
 }
 
-/* PANEL */
-.info-panel {
-    position: absolute;
-    top: 120px;
-    left: 20px;
-    width: 300px;
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 6px 20px rgba(0,0,0,0.3);
-    z-index: 999;
+.title h3{
+margin:0;
+font-size:16px;
 }
 
-.info-header {
-    background: #0f766e;
-    color: white;
-    padding: 10px;
-    display: flex;
-    justify-content: space-between;
+.title span{
+font-size:12px;
 }
 
-#info-content {
-    padding: 12px;
-    font-size: 13px;
+.menu a{
+color:white;
+margin:0 10px;
+text-decoration:none;
 }
 
-.hidden {
-    display: none;
+.menu input{
+padding:5px;
+border-radius:5px;
+border:none;
 }
 
-/* LABEL JALAN */
-.label-jalan {
-    background: #e10600;
-    color: white;
-    font-size: 11px;
-    padding: 3px 8px;
-    border-radius: 20px;
-    box-shadow: 0 3px 10px rgba(0,0,0,0.3);
+/* LAYER PANEL */
+.layer-panel{
+position:absolute;
+top:70px;
+right:10px;
+background:white;
+padding:15px;
+border-radius:8px;
+box-shadow:0 0 10px rgba(0,0,0,0.3);
+z-index:1000;
+width:200px;
 }
 
-/* LEGEND */
-.legend {
-    position: absolute;
-    bottom: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: white;
-    padding: 8px 20px;
-    border-radius: 25px;
-    box-shadow: 0 6px 15px rgba(0,0,0,0.25);
-    z-index: 999;
+.layer-panel h4{
+margin:10px 0 5px;
 }
 
-.legend-line {
-    width: 30px;
-    height: 6px;
-    background: #e10600;
-    display: inline-block;
-    border-radius: 4px;
+/* RESPONSIVE */
+@media(max-width:768px){
+
+.menu a{
+display:none;
 }
 
-/* MOBILE */
-@media (max-width: 768px) {
-
-    .info-panel {
-        width: 95%;
-        left: 2.5%;
-        top: auto;
-        bottom: 80px;
-    }
-
-    .label-jalan {
-        font-size: 9px;
-    }
+.menu input{
+width:120px;
+}
 
 }
