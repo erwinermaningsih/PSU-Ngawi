@@ -1,87 +1,76 @@
-html,body{
-margin:0;
+html, body{
 height:100%;
+margin:0;
 font-family:Segoe UI;
 }
 
+body{
+display:flex;
+flex-direction:column;
+}
+
 #map{
-height:100%;
+flex:1;
 }
 
 /* TOPBAR */
 .topbar{
-position:absolute;
-top:0;
-left:0;
-right:0;
 height:60px;
 background:#2c3e50;
 color:white;
 display:flex;
-justify-content:space-between;
 align-items:center;
 padding:0 15px;
-z-index:1000;
-}
-
-.left{
-display:flex;
-align-items:center;
 }
 
 .logo{
-height:32px;
-width:auto;
+height:28px;
 margin-right:10px;
 }
 
 .title h3{
 margin:0;
-font-size:16px;
+font-size:15px;
 }
 
 .title span{
-font-size:12px;
+font-size:11px;
 }
 
-.menu a{
-color:white;
-margin:0 10px;
-text-decoration:none;
-}
-
-.menu input{
-padding:5px;
-border-radius:5px;
-border:none;
-}
-
-/* LAYER PANEL */
-.layer-panel{
+/* PANEL */
+.info-panel{
 position:absolute;
-top:70px;
-right:10px;
+top:80px;
+left:15px;
+width:260px;
 background:white;
-padding:15px;
 border-radius:8px;
 box-shadow:0 0 10px rgba(0,0,0,0.3);
 z-index:1000;
-width:200px;
 }
 
-.layer-panel h4{
-margin:10px 0 5px;
+.info-header{
+background:#2c3e50;
+color:white;
+padding:8px;
+display:flex;
+justify-content:space-between;
 }
 
-/* RESPONSIVE */
-@media(max-width:768px){
+#info-content{
+padding:10px;
+font-size:13px;
+}
 
-.menu a{
+.hidden{
 display:none;
 }
 
-.menu input{
-width:120px;
-}
-
+/* LABEL JALAN */
+.label-jalan{
+background:red;
+color:white;
+padding:3px 8px;
+border-radius:20px;
+font-size:11px;
 }
