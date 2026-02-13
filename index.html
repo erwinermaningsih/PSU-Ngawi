@@ -36,14 +36,13 @@
 
 <script>
 
-// MAP STABIL
 var map = L.map('map', {
     minZoom: 11,
     maxZoom: 19,
     maxBoundsViscosity: 0.6
 }).setView([-7.4, 111.4], 12);
 
-// BASEMAP OPENSTREETMAP
+// BASEMAP OSM
 L.tileLayer(
 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
 {
@@ -51,21 +50,21 @@ L.tileLayer(
     maxZoom: 19
 }).addTo(map);
 
-// STYLE JALAN
+// STYLE JALAN MERAH
 function style(feature) {
     return {
-        color: "#06b6d4",
+        color: "#e10600",   // MERAH
         weight: window.innerWidth < 768 ? 9 : 6
     };
 }
 
-// INTERAKSI
 function onEachFeature(feature, layer) {
 
     var nama = feature.properties.Nama ||
                feature.properties.nama ||
                feature.properties.NAMA || "";
 
+    // LABEL TENGAH
     layer.bindTooltip(nama, {
         permanent: true,
         direction: "center",
@@ -76,10 +75,24 @@ function onEachFeature(feature, layer) {
 
         layer.unbindTooltip();
 
+        var props = feature.properties;
         var isi = "<b>Detail Jalan</b><br><br>";
 
-        for (var key in feature.properties) {
-            isi += "<b>" + key + "</b>: " + feature.properties[key] + "<br>";
+        for (var key in props) {
+
+            // UBAH NAME JADI NAMA JALAN
+            if (key.toLowerCase() === "name" || key.toLowerCase() === "nama") {
+                isi += "<b>Nama Jalan</b>: " + props[key] + "<br>";
+            }
+
+            // TAMBAH METER DI PANJANG
+            else if (key.toLowerCase().includes("panjang")) {
+                isi += "<b>" + key + "</b>: " + props[key] + " meter<br>";
+            }
+
+            else {
+                isi += "<b>" + key + "</b>: " + props[key] + "<br>";
+            }
         }
 
         document.getElementById("info-content").innerHTML = isi;
@@ -90,7 +103,6 @@ function onEachFeature(feature, layer) {
     });
 }
 
-// LOAD GEOJSON
 fetch("Jalan.geojson")
 .then(res => res.json())
 .then(data => {
@@ -106,8 +118,6 @@ fetch("Jalan.geojson")
 
     var bounds = geojsonLayer.getBounds();
     map.fitBounds(bounds, { padding:[20,20] });
-
-    // Soft limit supaya tidak terlalu jauh
     map.setMaxBounds(bounds.pad(0.5));
 });
 
@@ -125,7 +135,6 @@ document.getElementById("close-info").onclick = function(){
     }
 };
 
-// FIX RESIZE
 window.addEventListener("resize", function(){
     setTimeout(() => map.invalidateSize(), 200);
 });
