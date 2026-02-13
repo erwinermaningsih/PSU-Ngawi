@@ -36,6 +36,7 @@
 
 <script>
 
+// INISIALISASI MAP
 var map = L.map('map', {
     minZoom: 11,
     maxZoom: 19,
@@ -53,18 +54,18 @@ L.tileLayer(
 // STYLE JALAN MERAH
 function style(feature) {
     return {
-        color: "#e10600",   // MERAH
+        color: "#e10600",
         weight: window.innerWidth < 768 ? 9 : 6
     };
 }
 
+// INTERAKSI
 function onEachFeature(feature, layer) {
 
     var nama = feature.properties.Nama ||
                feature.properties.nama ||
                feature.properties.NAMA || "";
 
-    // LABEL TENGAH
     layer.bindTooltip(nama, {
         permanent: true,
         direction: "center",
@@ -80,12 +81,10 @@ function onEachFeature(feature, layer) {
 
         for (var key in props) {
 
-            // UBAH NAME JADI NAMA JALAN
             if (key.toLowerCase() === "name" || key.toLowerCase() === "nama") {
                 isi += "<b>Nama Jalan</b>: " + props[key] + "<br>";
             }
 
-            // TAMBAH METER DI PANJANG
             else if (key.toLowerCase().includes("panjang")) {
                 isi += "<b>" + key + "</b>: " + props[key] + " meter<br>";
             }
@@ -103,6 +102,7 @@ function onEachFeature(feature, layer) {
     });
 }
 
+// LOAD GEOJSON
 fetch("Jalan.geojson")
 .then(res => res.json())
 .then(data => {
@@ -117,11 +117,13 @@ fetch("Jalan.geojson")
     }).addTo(map);
 
     var bounds = geojsonLayer.getBounds();
+
     map.fitBounds(bounds, { padding:[20,20] });
+
     map.setMaxBounds(bounds.pad(0.5));
 });
 
-// CLOSE PANEL
+// TOMBOL CLOSE PANEL
 document.getElementById("close-info").onclick = function(){
 
     document.getElementById("info-panel").classList.add("hidden");
@@ -135,6 +137,7 @@ document.getElementById("close-info").onclick = function(){
     }
 };
 
+// FIX RESIZE
 window.addEventListener("resize", function(){
     setTimeout(() => map.invalidateSize(), 200);
 });
