@@ -1,19 +1,8 @@
-/* RESET */
-*{
-margin:0;
-padding:0;
-box-sizing:border-box;
-}
+*{margin:0;padding:0;box-sizing:border-box;}
 
 html, body{
 height:100%;
-font-family:Segoe UI, sans-serif;
-}
-
-/* FLEX LAYOUT AGAR MAP TIDAK PUTIH */
-body{
-display:flex;
-flex-direction:column;
+font-family:Segoe UI;
 }
 
 /* TOPBAR */
@@ -24,8 +13,6 @@ color:white;
 display:flex;
 align-items:center;
 padding:0 15px;
-z-index:1000;
-box-shadow:0 2px 6px rgba(0,0,0,0.25);
 }
 
 .left{
@@ -36,132 +23,67 @@ gap:10px;
 
 .logo{
 height:28px;
-width:auto;
-}
-
-.title h3{
-font-size:15px;
-margin:0;
-}
-
-.title span{
-font-size:11px;
-opacity:0.8;
 }
 
 /* MAP FULL */
 #map{
-flex:1;
+height:calc(100vh - 60px);
 width:100%;
 }
 
-/* ZOOM CONTROL TURUN DI BAWAH TOPBAR */
-.leaflet-top{
-top:70px !important;
-}
-
-/* PANEL DETAIL */
+/* PANEL */
 .info-panel{
 position:absolute;
 top:80px;
 left:15px;
 width:260px;
 background:white;
-border-radius:10px;
-box-shadow:0 6px 18px rgba(0,0,0,0.3);
+border-radius:8px;
+box-shadow:0 0 10px rgba(0,0,0,0.3);
 z-index:1000;
-overflow:hidden;
-animation:slideIn 0.3s ease;
-}
-
-@keyframes slideIn{
-from{transform:translateX(-20px);opacity:0;}
-to{transform:translateX(0);opacity:1;}
 }
 
 .info-header{
 background:#2c3e50;
 color:white;
-padding:10px;
+padding:8px;
 display:flex;
 justify-content:space-between;
-align-items:center;
-font-size:14px;
-}
-
-.info-header button{
-background:white;
-border:none;
-border-radius:50%;
-width:22px;
-height:22px;
-cursor:pointer;
-font-weight:bold;
 }
 
 #info-content{
-padding:12px;
+padding:10px;
 font-size:13px;
-line-height:1.5;
 }
 
-/* HIDDEN PANEL */
 .hidden{
 display:none;
 }
 
-/* LABEL NAMA JALAN */
+/* LABEL JALAN */
 .label-jalan{
-background:#e10600;
+background:red;
 color:white;
 padding:3px 8px;
 border-radius:20px;
 font-size:11px;
-box-shadow:0 3px 8px rgba(0,0,0,0.3);
 }
 
-/* POPUP LEAFLET (KALAU DIPAKAI) */
-.leaflet-popup-content-wrapper{
-border-radius:10px;
+/* ZOOM TURUN */
+.leaflet-top{
+top:70px !important;
 }
 
-/* RESPONSIVE MOBILE */
+/* MOBILE */
 @media(max-width:768px){
 
-.topbar{
-height:55px;
-padding:0 10px;
-}
+.logo{height:24px;}
 
-.logo{
-height:24px;
-}
-
-.title h3{
-font-size:13px;
-}
-
-.title span{
-font-size:10px;
-}
-
-/* PANEL JADI DI BAWAH */
 .info-panel{
-width:92%;
-left:4%;
+width:90%;
+left:5%;
 top:auto;
 bottom:20px;
 }
 
-/* ZOOM CONTROL POSISI */
-.leaflet-top{
-top:65px !important;
-}
-
-}
-
-/* SCROLL PANEL KALAU ISI PANJANG */
-#info-content{
-max-height:300px;
-overflow:auto;
 }
