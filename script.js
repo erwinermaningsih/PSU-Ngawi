@@ -1,91 +1,185 @@
-// ================= MAP =================
-var map = L.map('map').setView([-7.4,111.4],13);
+// ===============================
+// INIT MAP
+// ===============================
+var map = L.map('map').setView([-7.4, 111.4], 13);
 
-// ================= BASEMAP =================
+// ===============================
+// BASEMAP
+// ===============================
 var osm = L.tileLayer(
-'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-{ maxZoom:19, attribution:'© OpenStreetMap' }
+  'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+  {
+    maxZoom: 19,
+    attribution: '© OpenStreetMap'
+  }
 ).addTo(map);
 
-// ================= STYLE =================
-function styleJalan(){
-    return { color:"red", weight:6 };
-}
-
-function styleKelurahan(){
-    return {
-        color:"#0047AB",
-        weight:2,
-        fillColor:"#00AEEF",
-        fillOpacity:0.15
-    };
-}
-
-var layerJalan, layerKelurahan;
-
-// ================= LOAD JALAN =================
-fetch("./Jalan.geojson")
-.then(res => res.json())
-.then(data => {
-
-    layerJalan = L.geoJSON(data,{
-        style:styleJalan,
-
-        onEachFeature:function(feature, layer){
-
-            var p = feature.properties;
-            var nama = p["Fungsi Jalan"] || "Ruas Jalan";
-
-            layer.bindTooltip(nama,{
-                permanent:true,
-                direction:"center",
-                className:"label-jalan"
-            });
-
-        }
-
-    }).addTo(map);
-
-    // 🔥 ZOOM DARI JALAN (PASTI ADA)
-    map.fitBounds(layerJalan.getBounds());
-
-    setLayerControl();
-});
-
-// ================= LOAD KELURAHAN =================
-fetch("./kelurahankarangtengah.geojson")
-.then(res => res.json())
-.then(data => {
-
-    layerKelurahan = L.geoJSON(data,{
-        style:styleKelurahan,
-
-        onEachFeature:function(feature, layer){
-
-            var namaKel = feature.properties.KELURAHAN;
-
-            layer.bindPopup("<b>Kelurahan :</b> " + namaKel);
-
-        }
-
-    }).addTo(map);
-
-    setLayerControl();
-});
-
-// ================= CONTROL LAYER =================
+// ===============================
+// GLOBAL VAR
+// ===============================
+var layerJalan = null;
+var layerKelurahan = null;
 var controlLayer;
 
-function setLayerControl(){
+// ===============================
+// STYLE
+// ===============================
+function styleJalan() {
+  return {
+    color: "red",
+    weight: 6
+  };
+}
 
-    if(controlLayer) map.removeControl(controlLayer);
+function styleKelurahan() {
+  return {
+    color: "#0047AB",
+    weight: 2,
+    fillColor: "#00AEEF",
+    fillOpacity: 0.15
+  };
+}
 
-    controlLayer = L.control.layers(
-        { "OpenStreetMap": osm },
-        {
-            "Jalan": layerJalan,
-            "Kelurahan": layerKelurahan
-        },
-        { collapsed:false }
-    ).addTo(map);
+// ===============================
+// FUNCTION TAMPILKAN ATRIBUT
+// ===============================
+function tampilkanAtribut(props) {
+
+  var isi = "";
+
+  for (var key in props) {
+
+    var value = props[key];
+
+    if (value === null || value === "") value = "-";
+
+    if (key.toLowerCase().includes("panjang")) {
+      value = value + " meter";
+    }
+
+    isi += "<b>" + key + " :</b> " + value + "<br>";
+  }
+
+  document.getElementById("info-content").innerHTML = isi;
+  document.getElementById("info-panel").classList.remove("hidden");
+}
+
+// ===============================
+// LOAD JALAN
+// ===============================
+fetch("./Jalan.geojson")
+.then(res => {
+  if (!res.ok) throw new Error("Jalan.geojson tidak ditemukan");
+  return res.json();
+})
+.then(data => {
+
+  layerJalan = L.geoJSON(data, {
+
+    style: styleJalan,
+
+    onEachFeature: function (feature, layer) {
+
+      var props = feature.properties;
+      var nama = props["Fungsi Jalan"] || "Ruas Jalan";
+
+      // LABEL TENGAH
+      layer.bindTooltip(nama, {
+        permanent: true,
+        direction: "center",
+        className: "label-jalan"
+      });
+
+      // KLIK
+      layer.on("click", function () {
+
+        layer.unbindTooltip();
+
+        tampilkanAtribut(props);
+
+        window.layerAktif = layer;
+        window.namaTooltip = nama;
+      });
+    }
+
+  }).addTo(map);
+
+  map.fitBounds(layerJalan.getBounds());
+
+  setLayerControl();
+
+})
+.catch(err => console.log("ERROR JALAN:", err));
+
+// ===============================
+// LOAD KELURAHAN
+// ===============================
+fetch("./kelurahankarangtengah.geojson")
+.then(res => {
+  if (!res.ok) throw new Error("kelurahankarangtengah.geojson tidak ditemukan");
+  return res.json();
+})
+.then(data => {
+
+  layerKelurahan = L.geoJSON(data, {
+
+    style: styleKelurahan,
+
+    onEachFeature: function (feature, layer) {
+
+      var props = feature.properties;
+
+      layer.on("click", function () {
+
+        tampilkanAtribut(props);
+
+        map.fitBounds(layer.getBounds());
+      });
+
+    }
+
+  }).addTo(map);
+
+  setLayerControl();
+
+})
+.catch(err => console.log("ERROR KELURAHAN:", err));
+
+// ===============================
+// CONTROL LAYER
+// ===============================
+function setLayerControl() {
+
+  if (controlLayer) {
+    map.removeControl(controlLayer);
+  }
+
+  var baseMaps = {
+    "OpenStreetMap": osm
+  };
+
+  var overlayMaps = {};
+
+  if (layerJalan) overlayMaps["Jalan"] = layerJalan;
+  if (layerKelurahan) overlayMaps["Kelurahan"] = layerKelurahan;
+
+  controlLayer = L.control.layers(baseMaps, overlayMaps, {
+    collapsed: false
+  }).addTo(map);
+}
+
+// ===============================
+// TOMBOL TUTUP PANEL
+// ===============================
+function closePanel() {
+
+  document.getElementById("info-panel").classList.add("hidden");
+
+  if (window.layerAktif) {
+    window.layerAktif.bindTooltip(window.namaTooltip, {
+      permanent: true,
+      direction: "center",
+      className: "label-jalan"
+    });
+  }
 }
