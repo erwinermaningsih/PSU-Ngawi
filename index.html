@@ -14,12 +14,11 @@
 <div class="header">
     <h1>WebGIS PSU Jalan</h1>
     <p>Kabupaten Ngawi</p>
-    <span>Dibuat oleh: Erwin Ermaningsih | Tugas Latsar CPNS</span>
+    <span>Erwin Ermaningsih | Latsar CPNS</span>
 </div>
 
 <div id="map"></div>
 
-<!-- INFO PANEL -->
 <div id="info-panel" class="info-panel hidden">
     <div class="info-header">
         <span>Detail Jalan</span>
@@ -28,7 +27,6 @@
     <div id="info-content"></div>
 </div>
 
-<!-- LEGEND -->
 <div class="legend">
     <span>Jalan</span>
     <span class="legend-line"></span>
@@ -38,35 +36,36 @@
 
 <script>
 
-// Map dengan batas zoom
+// INISIALISASI MAP (SOFT LIMIT)
 var map = L.map('map', {
     minZoom: 11,
-    maxZoom: 19
+    maxZoom: 19,
+    maxBoundsViscosity: 0.7
 }).setView([-7.4, 111.4], 12);
 
-// Basemap Satelit
+// BASEMAP SATELIT TAJAM
 L.tileLayer(
 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-{ attribution: 'Tiles © Esri' }
-).addTo(map);
+{
+    attribution: 'Tiles © Esri',
+    maxZoom: 19
+}).addTo(map);
 
-// Style jalan
+// STYLE JALAN
 function style(feature) {
     return {
         color: "#06b6d4",
-        weight: window.innerWidth < 768 ? 9 : 6,
-        opacity: 1
+        weight: window.innerWidth < 768 ? 9 : 6
     };
 }
 
+// INTERAKSI
 function onEachFeature(feature, layer) {
 
     var nama = feature.properties.Nama ||
                feature.properties.nama ||
-               feature.properties.NAMA ||
-               "";
+               feature.properties.NAMA || "";
 
-    // Pasang label tengah jalan
     layer.bindTooltip(nama, {
         permanent: true,
         direction: "center",
@@ -75,16 +74,15 @@ function onEachFeature(feature, layer) {
 
     layer.on('click', function () {
 
-        // Hilangkan label saat diklik
         layer.unbindTooltip();
 
-        var content = "<b style='color:#0f766e;'>Detail Jalan</b><br><br>";
+        var isi = "<b>Detail Jalan</b><br><br>";
 
         for (var key in feature.properties) {
-            content += "<b>" + key + "</b>: " + feature.properties[key] + "<br>";
+            isi += "<b>" + key + "</b>: " + feature.properties[key] + "<br>";
         }
 
-        document.getElementById("info-content").innerHTML = content;
+        document.getElementById("info-content").innerHTML = isi;
         document.getElementById("info-panel").classList.remove("hidden");
 
         window.activeLayer = layer;
@@ -92,18 +90,13 @@ function onEachFeature(feature, layer) {
     });
 }
 
-// Load GeoJSON
+// LOAD GEOJSON
 fetch("Jalan.geojson")
-.then(response => response.json())
+.then(res => res.json())
 .then(data => {
 
-    // Outline agar kontras
     L.geoJSON(data, {
-        style: {
-            color: "#000",
-            weight: window.innerWidth < 768 ? 12 : 8,
-            opacity: 0.35
-        }
+        style: { color:"#000", weight:8, opacity:0.3 }
     }).addTo(map);
 
     var geojsonLayer = L.geoJSON(data, {
@@ -111,27 +104,31 @@ fetch("Jalan.geojson")
         onEachFeature: onEachFeature
     }).addTo(map);
 
-    map.fitBounds(geojsonLayer.getBounds());
-    map.setMaxBounds(geojsonLayer.getBounds());
+    var bounds = geojsonLayer.getBounds();
+
+    map.fitBounds(bounds, { padding:[20,20] });
+
+    // SOFT LIMIT (TIDAK NGUNCI)
+    map.setMaxBounds(bounds.pad(0.5));
 });
 
-// Tombol X
+// TOMBOL CLOSE PANEL
 document.getElementById("close-info").onclick = function(){
 
     document.getElementById("info-panel").classList.add("hidden");
 
     if (window.activeLayer && window.activeTooltipName) {
         window.activeLayer.bindTooltip(window.activeTooltipName, {
-            permanent: true,
-            direction: "center",
-            className: "label-jalan"
+            permanent:true,
+            direction:"center",
+            className:"label-jalan"
         });
     }
 };
 
-// Fix resize mobile
+// FIX RESIZE
 window.addEventListener("resize", function(){
-    setTimeout(function(){ map.invalidateSize(); },200);
+    setTimeout(() => map.invalidateSize(), 200);
 });
 
 </script>
