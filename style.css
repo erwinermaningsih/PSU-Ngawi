@@ -56,9 +56,9 @@ body {
     display: none;
 }
 
-/* LABEL */
+/* LABEL JALAN */
 .label-jalan {
-    background: #0f766e;
+    background: #e10600;
     color: white;
     font-size: 11px;
     padding: 3px 8px;
@@ -82,7 +82,7 @@ body {
 .legend-line {
     width: 30px;
     height: 6px;
-    background: #06b6d4;
+    background: #e10600;
     display: inline-block;
     border-radius: 4px;
 }
