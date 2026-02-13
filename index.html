@@ -1,78 +1,38 @@
-<script>
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>WebGIS PSU Ngawi</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-var map = L.map('map',{
-    minZoom:11,
-    maxZoom:19
-}).setView([-7.4,111.4],12);
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+<link rel="stylesheet" href="style.css">
+</head>
 
-L.tileLayer(
-'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-{ maxZoom:19 }
-).addTo(map);
+<body>
 
-// STYLE MERAH
-function style(){
-    return {color:"red", weight:6};
-}
+<div class="topbar">
+    <div class="left">
+        <img src="logo.png" class="logo">
+        <div class="title">
+            <h3>WEBGIS PSU</h3>
+            <span>Kabupaten Ngawi</span>
+        </div>
+    </div>
+</div>
 
-function onEachFeature(feature, layer){
+<div id="map"></div>
 
-    var namaJalan = feature.properties["Fungsi Jalan"] || "Ruas Jalan";
+<div id="info-panel" class="info-panel hidden">
+    <div class="info-header">
+        <span>Detail Jalan</span>
+        <button onclick="closePanel()">✕</button>
+    </div>
+    <div id="info-content"></div>
+</div>
 
-    // LABEL TENGAH
-    layer.bindTooltip(namaJalan,{
-        permanent:true,
-        direction:"center",
-        className:"label-jalan"
-    });
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script src="script.js"></script>
 
-    layer.on("click",function(){
-
-        layer.unbindTooltip();
-
-        var p = feature.properties;
-
-        var isi = `
-        <b>Detail Jalan</b><br><br>
-        <b>Nama Jalan :</b> ${p["Fungsi Jalan"]}<br>
-        <b>Kondisi :</b> ${p["Kondisi Jalan "]}<br>
-        <b>Tipe Perkerasan :</b> ${p["Tipe Perkerasan"]}<br>
-        <b>Panjang :</b> ${p["Panjang Jln"]} meter
-        `;
-
-        document.getElementById("info-content").innerHTML = isi;
-        document.getElementById("info-panel").classList.remove("hidden");
-
-        window.activeLayer = layer;
-        window.activeTooltipName = namaJalan;
-
-    });
-}
-
-// LOAD GEOJSON
-fetch("Jalan2.geojson")
-.then(res=>res.json())
-.then(data=>{
-
-    var layer = L.geoJSON(data,{
-        style:style,
-        onEachFeature:onEachFeature
-    }).addTo(map);
-
-    map.fitBounds(layer.getBounds());
-});
-
-document.getElementById("close-info").onclick = function(){
-
-    document.getElementById("info-panel").classList.add("hidden");
-
-    if(window.activeLayer){
-        window.activeLayer.bindTooltip(window.activeTooltipName,{
-            permanent:true,
-            direction:"center",
-            className:"label-jalan"
-        });
-    }
-};
-
-</script>
+</body>
+</html>
