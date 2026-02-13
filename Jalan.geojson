@@ -1,9 +1,0 @@
-{
-"type": "FeatureCollection",
-"name": "Jalan",
-"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
-"features": [
-{ "type": "Feature", "properties": { "Name": "Gang Prembangan", "Panjang": "364", "Fungsi Jalan": "Menghubungkan Antar RT", "Konstruksi": "Paving", "Kondisi": "Baik" }, "geometry": { "type": "LineString", "coordinates": [ [ 111.4479599, -7.3972746, 0.0 ], [ 111.448149, -7.3973305, 0.0 ], [ 111.4485674, -7.3973704, 0.0 ], [ 111.4492755, -7.3973385, 0.0 ], [ 111.4500346, -7.3973119, 0.0 ], [ 111.4511185, -7.3973994, 0.0 ] ] } },
-{ "type": "Feature", "properties": { "Name": "Jalan Joko Tingkir", "Fungsi Jalan": "Menghubungkan Antar RT", "Konstruksi": "Paving", "Kondisi": "Baik" }, "geometry": { "type": "LineString", "coordinates": [ [ 111.451786, -7.3927613, 0.0 ], [ 111.4522232, -7.3931178, 0.0 ], [ 111.4524458, -7.3937189, 0.0 ] ] } }
-]
-}
