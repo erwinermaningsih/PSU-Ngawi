@@ -2,145 +2,99 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<title>WebGIS PSU Jalan Kabupaten Ngawi</title>
+<title>WebGIS PSU Ngawi</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-<div class="header">
-    <h1>WebGIS PSU Jalan</h1>
-    <p>Kabupaten Ngawi</p>
-    <span>Erwin Ermaningsih | Latsar CPNS</span>
+<!-- TOPBAR -->
+<div class="topbar">
+    <div class="left">
+        <img src="logo.png" class="logo">
+        <div class="title">
+            <h3>WEBGIS PSU</h3>
+            <span>Kabupaten Ngawi</span>
+        </div>
+    </div>
+
+    <div class="menu">
+        <a href="#">Jalan</a>
+        <a href="#">Drainase</a>
+        <a href="#">RTH</a>
+        <input type="text" placeholder="Cari...">
+    </div>
 </div>
 
+<!-- MAP -->
 <div id="map"></div>
 
-<div id="info-panel" class="info-panel hidden">
-    <div class="info-header">
-        <span>Detail Jalan</span>
-        <button id="close-info">✕</button>
-    </div>
-    <div id="info-content"></div>
+<!-- PANEL KANAN -->
+<div class="layer-panel">
+    <h4>Basemap</h4>
+    <label><input type="radio" name="base" checked onclick="setBasemap(osm)"> OpenStreetMap</label>
+    <label><input type="radio" name="base" onclick="setBasemap(satelit)"> Satelit</label>
+
+    <h4>Layer</h4>
+    <label><input type="checkbox" checked onclick="toggleLayer(jalanLayer)"> Jalan</label>
 </div>
 
-<div class="legend">
-    <span>Jalan</span>
-    <span class="legend-line"></span>
-</div>
-
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
 <script>
 
-// INISIALISASI MAP
-var map = L.map('map', {
-    minZoom: 11,
-    maxZoom: 19,
-    maxBoundsViscosity: 0.6
-}).setView([-7.4, 111.4], 12);
+// MAP
+var map = L.map('map').setView([-7.4,111.4],12);
 
-// BASEMAP OSM
-L.tileLayer(
-'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-{
-    attribution: '&copy; OpenStreetMap contributors',
-    maxZoom: 19
-}).addTo(map);
+// BASEMAP
+var osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19}).addTo(map);
 
-// STYLE JALAN MERAH
-function style(feature) {
-    return {
-        color: "#0000FF",
-        weight: window.innerWidth < 768 ? 9 : 6
-    };
-}
+var satelit = L.tileLayer(
+'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+{maxZoom:18}
+);
 
-// INTERAKSI
-function onEachFeature(feature, layer) {
-
-    var nama = feature.properties.Nama ||
-               feature.properties.nama ||
-               feature.properties.NAMA || "";
-
-    layer.bindTooltip(nama, {
-        permanent: true,
-        direction: "center",
-        className: "label-jalan"
-    });
-
-    layer.on('click', function () {
-
-        layer.unbindTooltip();
-
-        var props = feature.properties;
-        var isi = "<b>Detail Jalan</b><br><br>";
-
-        for (var key in props) {
-
-            if (key.toLowerCase() === "name" || key.toLowerCase() === "nama") {
-                isi += "<b>Nama Jalan</b>: " + props[key] + "<br>";
-            }
-
-            else if (key.toLowerCase().includes("panjang")) {
-                isi += "<b>" + key + "</b>: " + props[key] + " meter<br>";
-            }
-
-            else {
-                isi += "<b>" + key + "</b>: " + props[key] + "<br>";
-            }
-        }
-
-        document.getElementById("info-content").innerHTML = isi;
-        document.getElementById("info-panel").classList.remove("hidden");
-
-        window.activeLayer = layer;
-        window.activeTooltipName = nama;
-    });
+// STYLE JALAN
+function style(){
+    return {color:"red", weight:5};
 }
 
 // LOAD GEOJSON
+var jalanLayer;
+
 fetch("Jalan.geojson")
-.then(res => res.json())
-.then(data => {
+.then(res=>res.json())
+.then(data=>{
 
-    L.geoJSON(data, {
-        style: { color:"#000", weight:8, opacity:0.3 }
+    jalanLayer = L.geoJSON(data,{
+        style:style,
+        onEachFeature:(f,l)=>{
+            l.bindPopup("<b>Nama Jalan:</b> "+f.properties.Nama);
+        }
     }).addTo(map);
 
-    var geojsonLayer = L.geoJSON(data, {
-        style: style,
-        onEachFeature: onEachFeature
-    }).addTo(map);
-
-    var bounds = geojsonLayer.getBounds();
-
-    map.fitBounds(bounds, { padding:[20,20] });
-
-    map.setMaxBounds(bounds.pad(0.5));
+    map.fitBounds(jalanLayer.getBounds());
 });
 
-// TOMBOL CLOSE PANEL
-document.getElementById("close-info").onclick = function(){
+// FUNGSI BASEMAP
+function setBasemap(layer){
+    map.eachLayer((l)=>{
+        if(l instanceof L.TileLayer) map.removeLayer(l);
+    });
+    layer.addTo(map);
+}
 
-    document.getElementById("info-panel").classList.add("hidden");
-
-    if (window.activeLayer && window.activeTooltipName) {
-        window.activeLayer.bindTooltip(window.activeTooltipName, {
-            permanent:true,
-            direction:"center",
-            className:"label-jalan"
-        });
+// TOGGLE LAYER
+function toggleLayer(layer){
+    if(map.hasLayer(layer)){
+        map.removeLayer(layer);
+    }else{
+        map.addLayer(layer);
     }
-};
-
-// FIX RESIZE
-window.addEventListener("resize", function(){
-    setTimeout(() => map.invalidateSize(), 200);
-});
+}
 
 </script>
 
