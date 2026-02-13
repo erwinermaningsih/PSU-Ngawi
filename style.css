@@ -9,6 +9,7 @@ display:flex;
 flex-direction:column;
 }
 
+/* MAP */
 #map{
 flex:1;
 }
@@ -21,6 +22,11 @@ color:white;
 display:flex;
 align-items:center;
 padding:0 15px;
+}
+
+.left{
+display:flex;
+align-items:center;
 }
 
 .logo{
@@ -73,4 +79,20 @@ color:white;
 padding:3px 8px;
 border-radius:20px;
 font-size:11px;
+}
+
+/* MOBILE */
+@media(max-width:768px){
+
+.logo{
+height:24px;
+}
+
+.info-panel{
+width:90%;
+left:5%;
+top:auto;
+bottom:20px;
+}
+
 }
