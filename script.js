@@ -1,75 +1,109 @@
-var map = L.map('map').setView([-7.4,111.4],12);
+// ===============================
+// INISIALISASI MAP
+// ===============================
+var map = L.map('map', {
+    zoomControl: true
+}).setView([-7.4, 111.4], 12);
 
-// BASEMAP
+// ===============================
+// BASEMAP OPENSTREETMAP
+// ===============================
 L.tileLayer(
-'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-{
-    maxZoom:19,
-    attribution:'© OpenStreetMap'
-}
+    'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+    {
+        maxZoom: 19,
+        attribution: '© OpenStreetMap'
+    }
 ).addTo(map);
 
+// ===============================
 // STYLE JALAN
-function style(){
-    return {color:"red", weight:6};
+// ===============================
+function styleJalan() {
+    return {
+        color: "#e10600",
+        weight: 6,
+        opacity: 1
+    };
 }
 
-// INTERAKSI
-function onEachFeature(feature, layer){
+// ===============================
+// INTERAKSI SETIAP FITUR
+// ===============================
+function onEachFeature(feature, layer) {
 
     var p = feature.properties;
 
-    var nama = p["Fungsi Jalan"] || "Ruas Jalan";
+    // Ambil nama jalan dari atribut
+    var namaJalan = p["Fungsi Jalan"] || "Ruas Jalan";
 
-    layer.bindTooltip(nama,{
-        permanent:true,
-        direction:"center",
-        className:"label-jalan"
+    // LABEL DI TENGAH GARIS
+    layer.bindTooltip(namaJalan, {
+        permanent: true,
+        direction: "center",
+        className: "label-jalan"
     });
 
-    layer.on("click",function(){
+    // SAAT DIKLIK
+    layer.on("click", function () {
 
         layer.unbindTooltip();
 
-        document.getElementById("info-content").innerHTML = `
-        <b>Nama Jalan :</b> ${nama}<br>
-        <b>Kondisi :</b> ${p["Kondisi Jalan "]}<br>
-        <b>Tipe Perkerasan :</b> ${p["Tipe Perkerasan"]}<br>
-        <b>Panjang :</b> ${p["Panjang Jln"]} meter
+        var isi = `
+        <b>Nama Jalan :</b> ${namaJalan}<br>
+        <b>Kondisi :</b> ${p["Kondisi Jalan "] || "-"}<br>
+        <b>Tipe Perkerasan :</b> ${p["Tipe Perkerasan"] || "-"}<br>
+        <b>Panjang :</b> ${p["Panjang Jln"] || 0} meter
         `;
 
+        document.getElementById("info-content").innerHTML = isi;
         document.getElementById("info-panel").classList.remove("hidden");
 
-        window.activeLayer = layer;
-        window.activeTooltipName = nama;
+        window.layerAktif = layer;
+        window.namaTooltip = namaJalan;
     });
 }
 
+// ===============================
 // LOAD GEOJSON
+// ===============================
 fetch("./Jalan.geojson")
-.then(res => res.json())
-.then(data => {
+    .then(response => {
 
-    var geojson = L.geoJSON(data,{
-        style:style,
-        onEachFeature:onEachFeature
-    }).addTo(map);
+        if (!response.ok) {
+            throw new Error("File GeoJSON tidak ditemukan");
+        }
 
-    map.fitBounds(geojson.getBounds());
+        return response.json();
+    })
+    .then(data => {
 
-})
-.catch(err => console.log("GeoJSON error:", err));
+        var geojsonLayer = L.geoJSON(data, {
+            style: styleJalan,
+            onEachFeature: onEachFeature
+        }).addTo(map);
 
-// TUTUP PANEL
-function closePanel(){
+        map.fitBounds(geojsonLayer.getBounds());
+
+    })
+    .catch(error => {
+        console.log("ERROR:", error);
+        alert("GeoJSON tidak terbaca. Cek nama file & lokasi file.");
+    });
+
+// ===============================
+// TOMBOL TUTUP PANEL
+// ===============================
+function closePanel() {
 
     document.getElementById("info-panel").classList.add("hidden");
 
-    if(window.activeLayer){
-        window.activeLayer.bindTooltip(window.activeTooltipName,{
-            permanent:true,
-            direction:"center",
-            className:"label-jalan"
+    // Kembalikan label
+    if (window.layerAktif) {
+        window.layerAktif.bindTooltip(window.namaTooltip, {
+            permanent: true,
+            direction: "center",
+            className: "label-jalan"
         });
     }
 }
