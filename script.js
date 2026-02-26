@@ -4,15 +4,34 @@
 var map = L.map('map').setView([-7.4, 111.4], 13);
 
 // ===============================
-// BASEMAP
+// BASEMAP GOOGLE
 // ===============================
-var osm = L.tileLayer(
-  'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+var googleStreets = L.tileLayer(
+  'https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',
   {
-    maxZoom: 19,
-    attribution: '© OpenStreetMap'
+    maxZoom: 20,
+    subdomains: ['mt0','mt1','mt2','mt3'],
+    attribution: '© Google'
   }
 ).addTo(map);
+
+var googleSat = L.tileLayer(
+  'https://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',
+  {
+    maxZoom: 20,
+    subdomains: ['mt0','mt1','mt2','mt3'],
+    attribution: '© Google'
+  }
+);
+
+var googleHybrid = L.tileLayer(
+  'https://{s}.google.com/vt/lyrs=y&x={x}&y={y}&z={z}',
+  {
+    maxZoom: 20,
+    subdomains: ['mt0','mt1','mt2','mt3'],
+    attribution: '© Google'
+  }
+);
 
 // ===============================
 // GLOBAL VAR
@@ -83,14 +102,12 @@ fetch("./Jalan.geojson")
       var props = feature.properties;
       var nama = props["Fungsi Jalan"] || "Ruas Jalan";
 
-      // LABEL TENGAH
       layer.bindTooltip(nama, {
         permanent: true,
         direction: "center",
         className: "label-jalan"
       });
 
-      // KLIK
       layer.on("click", function () {
 
         layer.unbindTooltip();
@@ -155,7 +172,9 @@ function setLayerControl() {
   }
 
   var baseMaps = {
-    "OpenStreetMap": osm
+    "Google Streets": googleStreets,
+    "Google Satellite": googleSat,
+    "Google Hybrid": googleHybrid
   };
 
   var overlayMaps = {};
