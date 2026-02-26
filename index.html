@@ -1,38 +1,26 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="UTF-8">
-<title>WEBGIS PSU Kabupaten Ngawi</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="utf-8"/>
+  <title>WebGIS PSU Ngawi</title>
 
-<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
-<link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+  <link rel="stylesheet" href="style.css"/>
+
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/papaparse@5.4.1/papaparse.min.js"></script>
 </head>
 
 <body>
 
-<div class="topbar">
-    <div class="left">
-        <img src="logo.png" class="logo">
-        <div>
-            <b>WEBGIS PSU</b><br>
-            <small>Kabupaten Ngawi</small>
-        </div>
-    </div>
-</div>
-
 <div id="map"></div>
 
-<div id="info-panel" class="info-panel hidden">
-    <div class="info-header">
-        Detail Jalan
-        <button onclick="closePanel()">✕</button>
-    </div>
-    <div id="info-content"></div>
+<div id="info-panel" class="hidden">
+  <h3>Informasi</h3>
+  <div id="info-content"></div>
+  <button onclick="closePanel()">Tutup</button>
 </div>
 
-<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script src="script.js"></script>
-
 </body>
 </html>
