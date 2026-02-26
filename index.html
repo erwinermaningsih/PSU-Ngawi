@@ -1,130 +1,47 @@
-// INIT MAP
-var map = L.map('map').setView([-7.4, 111.4], 13);
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8"/>
+  <title>WebGIS Fasilitas Umum</title>
 
-// BASEMAP
-var googleSat = L.tileLayer(
- 'https://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',
- {maxZoom:20, subdomains:['mt0','mt1','mt2','mt3']}
-).addTo(map);
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/papaparse@5.4.1/papaparse.min.js"></script>
 
-// SCALE
-L.control.scale().addTo(map);
-
-// ================= GEOJSON =================
-var layerJalan, layerKelurahan, layerTitik = L.layerGroup().addTo(map);
-
-function tampilkanAtribut(props){
-  var isi="";
-  for (var key in props){
-    isi += "<b>"+key+"</b> : "+props[key]+"<br>";
-  }
-  document.getElementById("info-content").innerHTML = isi;
-  document.getElementById("info-panel").classList.remove("hidden");
-}
-
-// LOAD JALAN
-fetch("Jalan.geojson")
-.then(res=>res.json())
-.then(data=>{
-  layerJalan = L.geoJSON(data,{
-    style:{color:"red",weight:5},
-    onEachFeature:(f,l)=>{
-      l.on("click",()=>tampilkanAtribut(f.properties));
+  <style>
+    html, body {height:100%; margin:0;}
+    #map {height:100%;}
+    #info-panel{
+      position:absolute;
+      top:10px;
+      right:10px;
+      width:250px;
+      background:white;
+      padding:15px;
+      border-radius:10px;
+      z-index:999;
+      box-shadow:0 0 15px rgba(0,0,0,0.2);
     }
-  }).addTo(map);
-});
-
-// LOAD KELURAHAN
-fetch("kelurahankarangtengah.geojson")
-.then(res=>res.json())
-.then(data=>{
-  layerKelurahan = L.geoJSON(data,{
-    style:{color:"blue",fillOpacity:0.1},
-    onEachFeature:(f,l)=>{
-      l.on("click",()=>tampilkanAtribut(f.properties));
+    .hidden{display:none;}
+    .legend{
+      background:white;
+      padding:10px;
+      border-radius:8px;
+      line-height:1.6;
     }
-  }).addTo(map);
-});
+  </style>
+</head>
 
-// ================= CSV EXCEL =================
-Papa.parse("titik_psu.csv",{
-  download:true,
-  header:true,
-  complete:function(results){
+<body>
 
-    results.data.forEach(row=>{
+<div id="map"></div>
 
-      if(!row.x || !row.y) return;
+<div id="info-panel" class="hidden">
+  <h3>Informasi</h3>
+  <div id="info-content"></div>
+  <button onclick="closePanel()">Tutup</button>
+</div>
 
-      var lat = parseFloat(row.y);
-      var lng = parseFloat(row.x);
-
-      var marker = L.marker([lat,lng])
-        .bindPopup("<b>"+row.nama+"</b>")
-        .addTo(layerTitik);
-
-      // JANGKAUAN
-      if(row.jangkauan1){
-        L.circle([lat,lng],{
-          radius:row.jangkauan1,
-          color:"green",
-          fillOpacity:0.1
-        }).addTo(layerTitik);
-      }
-
-      if(row.jangkauan2){
-        L.circle([lat,lng],{
-          radius:row.jangkauan2,
-          color:"orange",
-          fillOpacity:0.08
-        }).addTo(layerTitik);
-      }
-
-      if(row.jangkauan3){
-        L.circle([lat,lng],{
-          radius:row.jangkauan3,
-          color:"red",
-          fillOpacity:0.05
-        }).addTo(layerTitik);
-      }
-
-    });
-
-  }
-});
-
-// ================= LAYER CONTROL =================
-var baseMaps = {
-  "Google Satellite": googleSat
-};
-
-var overlayMaps = {
-  "Jalan": layerJalan,
-  "Kelurahan": layerKelurahan,
-  "Titik PSU": layerTitik
-};
-
-L.control.layers(baseMaps, overlayMaps,{collapsed:false}).addTo(map);
-
-// ================= CLOSE PANEL =================
-function closePanel(){
-  document.getElementById("info-panel").classList.add("hidden");
-}
-
-// ================= LEGENDA =================
-var legend = L.control({position:"bottomright"});
-
-legend.onAdd = function(){
-  var div = L.DomUtil.create("div","legend");
-  div.innerHTML = `
-  <b>Legenda</b><br>
-  <i style="background:red;width:15px;height:5px;display:inline-block"></i> Jalan<br>
-  <i style="background:blue;width:15px;height:5px;display:inline-block"></i> Kelurahan<br>
-  <i style="background:green;width:10px;height:10px;display:inline-block;border-radius:50%"></i> Jangkauan 1<br>
-  <i style="background:orange;width:10px;height:10px;display:inline-block;border-radius:50%"></i> Jangkauan 2<br>
-  <i style="background:red;width:10px;height:10px;display:inline-block;border-radius:50%"></i> Jangkauan 3
-  `;
-  return div;
-};
-
-legend.addTo(map);
+<script src="script.js"></script>
+</body>
+</html>
