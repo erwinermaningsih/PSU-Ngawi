@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>WebGIS PSU Jalan – Dinas Perumahan Rakyat & Kawasan Permukiman Kab. Ngawi</title>
+
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/papaparse@5.4.1/papaparse.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-left">
+    <img src="logo.png" class="logo" alt="Logo Ngawi"/>
+    <div class="topbar-title">
+      <span class="title-main">WebGIS PSU Jalan</span>
+      <span class="title-sub">Dinas Perumahan Rakyat &amp; Kawasan Permukiman – Kabupaten Ngawi</span>
+    </div>
+  </div>
+  <div class="topbar-right">
+    <div class="stat-chip">
+      <span class="stat-icon">🛣️</span>
+      <div class="stat-info"><span class="stat-label">Segmen Jalan</span><span class="stat-val" id="total-jalan">–</span></div>
+    </div>
+    <div class="stat-chip">
+      <span class="stat-icon">📏</span>
+      <div class="stat-info"><span class="stat-label">Total Panjang</span><span class="stat-val" id="total-panjang">–</span></div>
+    </div>
+    <div class="stat-chip">
+      <span class="stat-icon">🏫</span>
+      <div class="stat-info"><span class="stat-label">Fasilitas Umum</span><span class="stat-val" id="total-fasum">–</span></div>
+    </div>
+  </div>
+</header>
+
+<div id="map"></div>
+
+<div id="info-panel" class="hidden">
+  <div class="info-header">
+    <span id="info-title">Detail</span>
+    <button class="btn-close" onclick="closePanel()">✕</button>
+  </div>
+  <div id="info-content"></div>
+</div>
+
+<div id="basemap-switcher">
+  <button class="bm-btn active" data-bm="satellite" title="Satelit">🛰️</button>
+  <button class="bm-btn" data-bm="osm" title="OpenStreetMap">🗺️</button>
+  <button class="bm-btn" data-bm="topo" title="Topografi">⛰️</button>
+</div>
+
+<div id="layer-panel">
+  <div class="lp-header">Layer</div>
+  <label class="lp-item">
+    <input type="checkbox" id="tog-jalan" checked/>
+    <span class="lp-swatch jalan-sw"></span>
+    Jalan PSU
+  </label>
+  <label class="lp-item">
+    <input type="checkbox" id="tog-kelurahan" checked/>
+    <span class="lp-swatch kel-sw"></span>
+    Batas Kelurahan
+  </label>
+  <label class="lp-item">
+    <input type="checkbox" id="tog-fasum" checked/>
+    <span class="lp-swatch fasum-sw"></span>
+    Fasilitas Umum
+  </label>
+</div>
+
+<div id="loading-overlay">
+  <div class="loading-box">
+    <div class="spinner"></div>
+    <p>Memuat data peta…</p>
+  </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
