@@ -1,0 +1,8 @@
+{
+"type": "FeatureCollection",
+"name": "Jalan2",
+"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
+"features": [
+{ "type": "Feature", "properties": { "Kondisi Jalan ": "Baik", "Tipe Perkerasan": "Paving", "Fungsi Jalan": "Menghubungkan antar RT", "Panjang Jln": 137.26 }, "geometry": { "type": "LineString", "coordinates": [ [ 111.4524436, -7.3937031, 0.0 ], [ 111.4523303, -7.3933613, 0.0 ], [ 111.4522109, -7.3931033, 0.0 ], [ 111.4517871, -7.3927628, 0.0 ] ] } }
+]
+}
