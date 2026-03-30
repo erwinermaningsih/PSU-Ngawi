@@ -47,7 +47,7 @@ function hideJangkauan() {
 }
 
 // ── LOADING COUNTER ────────────────────────────────────────────────
-// 3 sumber data: JALAN KELURAHAN.json, Batas 4 Kelurahan.json, fasilitas_umum.csv
+// 3 sumber data: JALAN KELURAHAN.json, batas_kelurahan.json, fasilitas_umum.csv
 var loadPending = 3;
 function checkLoaded() {
   loadPending--;
@@ -139,7 +139,6 @@ function tampilkanAtribut(judul, rows, tipe) {
                     : kondisiTeks === 'RUSAK RINGAN'  ? '#f39c12'
                     : kondisiTeks === 'RUSAK SEDANG'  ? '#FFFF00'
                     : kondisiTeks === 'RUSAK BERAT'   ? '#e74c3c'
-                    : '#95a5a6';
 
     html += '<div class="jalan-card">';
 
@@ -222,7 +221,7 @@ function closePanel() {
 map.on('click', function () { closePanel(); });
 
 // ── KONVERSI ESRI JSON → GEOJSON ──────────────────────────────────
-// Batas 4 Kelurahan.json menggunakan format ESRI FeatureSet (bukan GeoJSON)
+// batas_elurahan.json menggunakan format ESRI FeatureSet (bukan GeoJSON)
 // geometryType: esriGeometryPolygon, geometry: { rings: [...] }
 function esriToGeoJSON(esriData) {
   var features = (esriData.features || []).map(function (f) {
@@ -330,8 +329,8 @@ fetch('JALAN KELURAHAN.json')
     checkLoaded();
   });
 
-// ── GEOJSON: Batas 4 KELURAHAN (dari Batas 4 Kelurahan.json, format ESRI) ─────
-fetch('Batas 4 Kelurahan.json')
+// ── GEOJSON: batas_kelurahan (dari batas_kelurahan.json, format ESRI) ─────
+fetch('batas_kelurahan.json')
   .then(function (r) {
     if (!r.ok) throw new Error('HTTP ' + r.status);
     return r.json();
