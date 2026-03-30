@@ -76,7 +76,6 @@ function warnaKondisi(kondisi) {
   if (k === 'RUSAK RINGAN') return '#f39c12';
   if (k === 'RUSAK SEDANG') return '#FFFF00';
   if (k === 'RUSAK BERAT')  return '#e74c3c';
-  return '#95a5a6';
 }
 
 // ── BADGE KONDISI ──────────────────────────────────────────────────
@@ -85,10 +84,9 @@ function badgeKondisi(k) {
   var upper = safe.toUpperCase();
   var cls;
   if (upper === 'BAIK')        cls = 'badge-Baik';
-  else if (upper === 'RUSAK RINGAN') cls = 'badge-Rusak Ringan';
-  else if (upper === 'RUSAK SEDANG')  cls = 'badge-Rusak Sedang';
-  else if (upper === 'RUSAK BERAT')  cls = 'badge-Rusak Berat';
-  else                               cls = 'badge-Unknown';
+  else if (upper === 'RUSAK RINGAN') cls = 'badge-Rusakringan';
+  else if (upper === 'RUSAK SEDANG')  cls = 'badge-Rusaksedang';
+  else if (upper === 'RUSAK BERAT')  cls = 'badge-Rusakberat';
   return '<span class="badge-kondisi ' + cls + '">' + escapeHtml(safe) + '</span>';
 }
 
