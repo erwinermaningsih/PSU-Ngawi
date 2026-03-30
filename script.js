@@ -116,37 +116,86 @@ function tampilkanAtribut(judul, rows, tipe) {
   var html = '';
 
   if (tipe === 'jalan') {
-    // Card design khusus jalan
-    var kondisiRow = rows.find(function(r) { return r.key === 'Kondisi'; });
-    var namaRow    = rows.find(function(r) { return r.key === 'Nama Ruas'; });
-    var kelRow     = rows.find(function(r) { return r.key === 'Kelurahan'; });
-    var jenisRow   = rows.find(function(r) { return r.key === 'Jenis Jalan'; });
-    var panjangRow = rows.find(function(r) { return r.key === 'Panjang'; });
+    var getRow = function(key) {
+      var found = null;
+      rows.forEach(function(r) { if (r.key === key) found = r; });
+      return found;
+    };
+
+    var kondisiRow   = getRow('Kondisi');
+    var namaRow      = getRow('Nama Ruas');
+    var kelRow       = getRow('Kelurahan');
+    var jenisRow     = getRow('Jenis Jalan');
+    var panjangRow   = getRow('Panjang');
+    var lebarRow     = getRow('Lebar');
+    var permukaanRow = getRow('Permukaan');
+    var kecamatanRow = getRow('Kecamatan');
+
+    // Tentukan warna aksen dari kondisi
+    var kondisiTeks = kondisiRow
+      ? (kondisiRow.val || '').replace(/<[^>]+>/g, '').trim().toUpperCase()
+      : '';
+    var accentColor = kondisiTeks === 'BAIK'        ? '#27ae60'
+                    : kondisiTeks === 'KURANG BAIK'  ? '#f39c12'
+                    : kondisiTeks === 'TIDAK BAIK'   ? '#e74c3c'
+                    : '#95a5a6';
 
     html += '<div class="jalan-card">';
 
-    // Badge kondisi besar di atas
+    // Strip warna kondisi di atas
+    html += '<div class="jc-strip" style="background:' + accentColor + '"></div>';
+
+    // Badge kondisi
     if (kondisiRow) {
-      html += '<div class="jalan-card-kondisi">' + kondisiRow.val + '</div>';
+      html += '<div class="jc-badge-wrap">' + kondisiRow.val + '</div>';
     }
 
-    // Nama ruas besar
-    if (namaRow) {
-      html += '<div class="jalan-card-nama">' + escapeHtml(namaRow.val) + '</div>';
+    // Nama ruas
+    html += '<div class="jc-nama">' + escapeHtml(namaRow ? namaRow.val : '-') + '</div>';
+
+    html += '<div class="jc-divider"></div>';
+
+    // Baris info — tampilkan semua yang ada nilainya
+    var infoItems = [
+      { icon: '📍', label: 'Kelurahan',   row: kelRow },
+      { icon: '🏘️', label: 'Kecamatan',  row: kecamatanRow },
+      { icon: '🏗️', label: 'Jenis Jalan', row: jenisRow },
+      { icon: '🛣️', label: 'Permukaan',   row: permukaanRow },
+      { icon: '↔️', label: 'Lebar',       row: lebarRow }
+    ];
+
+    var adaInfo = false;
+    infoItems.forEach(function(item) {
+      if (!item.row || !item.row.val || item.row.val === '-') return;
+      adaInfo = true;
+      html += '<div class="jc-row">'
+            + '<span class="jc-row-icon">' + item.icon + '</span>'
+            + '<span class="jc-row-label">' + item.label + '</span>'
+            + '<span class="jc-row-val">' + escapeHtml(item.row.val) + '</span>'
+            + '</div>';
+    });
+
+    // Fallback: tampilkan semua rows yang belum ditangani di atas
+    if (!adaInfo) {
+      rows.forEach(function(r) {
+        if (r.key === 'Kondisi' || r.key === 'Nama Ruas' || r.key === 'Panjang') return;
+        var valHtml = r.isHtml ? r.val : escapeHtml(r.val);
+        html += '<div class="jc-row">'
+              + '<span class="jc-row-icon">•</span>'
+              + '<span class="jc-row-label">' + escapeHtml(r.key) + '</span>'
+              + '<span class="jc-row-val">' + valHtml + '</span>'
+              + '</div>';
+      });
     }
 
-    // Grid info
-    html += '<div class="jalan-card-grid">';
-    if (kelRow) {
-      html += '<div class="jalan-grid-item"><span class="jalan-grid-icon">📍</span><span class="jalan-grid-label">Kelurahan</span><span class="jalan-grid-val">' + escapeHtml(kelRow.val) + '</span></div>';
+    // Panjang — kotak besar di bawah
+    if (panjangRow && panjangRow.val && panjangRow.val !== '-') {
+      html += '<div class="jc-panjang-box" style="border-color:' + accentColor + '20">'
+            + '<span class="jc-panjang-label">📏 Panjang Ruas</span>'
+            + '<span class="jc-panjang-val" style="color:' + accentColor + '">' + escapeHtml(panjangRow.val) + '</span>'
+            + '</div>';
     }
-    if (jenisRow) {
-      html += '<div class="jalan-grid-item"><span class="jalan-grid-icon">🏗️</span><span class="jalan-grid-label">Jenis</span><span class="jalan-grid-val">' + escapeHtml(jenisRow.val) + '</span></div>';
-    }
-    if (panjangRow) {
-      html += '<div class="jalan-grid-item jalan-grid-full"><span class="jalan-grid-icon">📏</span><span class="jalan-grid-label">Panjang</span><span class="jalan-grid-val jalan-panjang-val">' + escapeHtml(panjangRow.val) + '</span></div>';
-    }
-    html += '</div>';
+
     html += '</div>';
 
   } else {
@@ -232,8 +281,12 @@ fetch('JALAN KELURAHAN.json')
         var nama    = (p.NAMA_RUAS   || '-').trim();
         var kondisi = (p.KONDISI_JA  || '-').trim();
         var jenis   = (p.JENIS_JALA  || '-').trim();
-        var kel     = (p.KELURAHAN   || '-').trim();
+        var kel     = (p.KELURAHAN   || p.DESA_KELUR || '-').trim();
+        var kec     = (p.KECAMATAN   || '-').trim();
         var panjang = parseFloat(p.PANJANG_JA || 0) || 0;
+        var lebar   = (p.LEBAR_JALA  || p.LEBAR || '').toString().trim();
+        var permukaan = (p.PERMUKAAN || p.JENIS_PERM || '').toString().trim();
+        var ket     = (p.KETERANGAN  || p.KET || '').toString().trim();
 
         layer.bindTooltip(nama, {
           permanent: false,
@@ -244,13 +297,18 @@ fetch('JALAN KELURAHAN.json')
 
         layer.on('click', function (e) {
           L.DomEvent.stopPropagation(e);
-          tampilkanAtribut('🛣️ ' + nama, [
-            { key: 'Nama Ruas',    val: nama },
-            { key: 'Kelurahan',    val: kel },
-            { key: 'Kondisi',      val: badgeKondisi(kondisi), isHtml: true },
-            { key: 'Jenis Jalan',  val: jenis },
-            { key: 'Panjang',      val: panjang > 0 ? panjang.toFixed(0) + ' m' : '-' }
-          ], 'jalan');
+          var rowData = [
+            { key: 'Nama Ruas',   val: nama },
+            { key: 'Kelurahan',   val: kel },
+            { key: 'Kecamatan',   val: kec },
+            { key: 'Kondisi',     val: badgeKondisi(kondisi), isHtml: true },
+            { key: 'Jenis Jalan', val: jenis },
+            { key: 'Permukaan',   val: permukaan || '-' },
+            { key: 'Lebar',       val: lebar ? lebar + ' m' : '-' },
+            { key: 'Panjang',     val: panjang > 0 ? panjang.toFixed(0) + ' m' : '-' }
+          ];
+          if (ket && ket !== '-') rowData.push({ key: 'Keterangan', val: ket });
+          tampilkanAtribut('🛣️ ' + nama, rowData, 'jalan');
         });
 
         layer.on('mouseover', function () {
