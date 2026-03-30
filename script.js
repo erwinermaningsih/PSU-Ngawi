@@ -69,12 +69,13 @@ function escapeHtml(str) {
 }
 
 // ── WARNA KONDISI JALAN ────────────────────────────────────────────
-// Sesuai nilai field KONDISI_JA: 'BAIK', 'KURANG BAIK', 'TIDAK BAIK'
+// Sesuai nilai field KONDISI_JA: 'BAIK', 'RUSAK RINGAN', 'RUSAK SEDANG', 'RUSAK BERAT'
 function warnaKondisi(kondisi) {
   var k = (kondisi || '').trim().toUpperCase();
   if (k === 'BAIK')        return '#27ae60';
-  if (k === 'KURANG BAIK') return '#f39c12';
-  if (k === 'TIDAK BAIK')  return '#e74c3c';
+  if (k === 'RUSAK RINGAN') return '#f39c12';
+  if (k === 'RUSAK SEDANG') return '#FFFF00';
+  if (k === 'RUSAK BERAT')  return '#e74c3c';
   return '#95a5a6';
 }
 
@@ -84,8 +85,9 @@ function badgeKondisi(k) {
   var upper = safe.toUpperCase();
   var cls;
   if (upper === 'BAIK')        cls = 'badge-Baik';
-  else if (upper === 'KURANG BAIK') cls = 'badge-Sedang';
-  else if (upper === 'TIDAK BAIK')  cls = 'badge-Rusak';
+  else if (upper === 'RUSAK RINGAN') cls = 'badge-Rusak Ringan';
+  else if (upper === 'RUSAK SEDANG')  cls = 'badge-Rusak Sedang';
+  else if (upper === 'RUSAK BERAT')  cls = 'badge-Rusak Berat';
   else                               cls = 'badge-Unknown';
   return '<span class="badge-kondisi ' + cls + '">' + escapeHtml(safe) + '</span>';
 }
