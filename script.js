@@ -101,12 +101,12 @@ var KELURAHAN_COLORS = {
 function getKelurahanStyle(nama) {
   var c = KELURAHAN_COLORS[nama] || { color: '#7f8c8d', fill: '#95a5a6' };
   return {
-    color: c.color,
-    weight: 2,
-    opacity: 0.85,
-    fillColor: c.fill,
-    fillOpacity: 0.10,
-    dashArray: '5,4'
+    color:       c.color,
+    weight:      2.5,
+    opacity:     0.9,
+    fillOpacity: 0,          // ← tanpa fill sama sekali
+    dashArray:   '6,5',
+    interactive: false       // ← klik tembus ke layer jalan di bawahnya
   };
 }
 
@@ -343,38 +343,6 @@ fetch('4_kelurahan.json')
       style: function (feature) {
         var nama = (feature.properties.NAMOBJ || '').trim();
         return getKelurahanStyle(nama);
-      },
-      onEachFeature: function (f, layer) {
-        var p    = f.properties || {};
-        var nama = (p.NAMOBJ  || '-').trim();
-        var kec  = (p.WADMKC  || '-').trim();
-        var kab  = (p.WADMKK  || '-').trim();
-        var prov = (p.WADMPR  || '-').trim();
-
-        var styleBase = getKelurahanStyle(nama);
-
-        layer.bindTooltip(nama, {
-          sticky: true,
-          className: 'jalan-tooltip',
-          direction: 'top'
-        });
-
-        layer.on('click', function (e) {
-          L.DomEvent.stopPropagation(e);
-          tampilkanAtribut('📍 Kelurahan ' + nama, [
-            { key: 'Kelurahan',  val: nama },
-            { key: 'Kecamatan',  val: kec  },
-            { key: 'Kabupaten',  val: kab  },
-            { key: 'Provinsi',   val: prov }
-          ]);
-        });
-
-        layer.on('mouseover', function () {
-          layer.setStyle({ fillOpacity: 0.25, weight: 3, dashArray: '' });
-        });
-        layer.on('mouseout', function () {
-          layer.setStyle(styleBase);
-        });
       }
     }).addTo(layerKelurahan);
 
