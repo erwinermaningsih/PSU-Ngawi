@@ -1,5 +1,5 @@
 /* =================================================================
-   WebGIS PSU Jalan – Dinas Perumahan Rakyat Kab. Ngawi
+   SIGAP PSU – Dinas Perumahan Rakyat Kab. Ngawi
    ================================================================= */
 
 'use strict';
@@ -47,7 +47,7 @@ function hideJangkauan() {
 }
 
 // ── LOADING COUNTER ────────────────────────────────────────────────
-// 3 sumber data: JALAN KELURAHAN.json, 4_kelurahan.json, fasilitas_umum.csv
+// 3 sumber data: JALAN KELURAHAN.json, Batas 4 Kelurahan.json, fasilitas_umum.csv
 var loadPending = 3;
 function checkLoaded() {
   loadPending--;
@@ -136,8 +136,9 @@ function tampilkanAtribut(judul, rows, tipe) {
       ? (kondisiRow.val || '').replace(/<[^>]+>/g, '').trim().toUpperCase()
       : '';
     var accentColor = kondisiTeks === 'BAIK'        ? '#27ae60'
-                    : kondisiTeks === 'KURANG BAIK'  ? '#f39c12'
-                    : kondisiTeks === 'TIDAK BAIK'   ? '#e74c3c'
+                    : kondisiTeks === 'RUSAK RINGAN'  ? '#f39c12'
+                    : kondisiTeks === 'RUSAK SEDANG'  ? '#FFFF00'
+                    : kondisiTeks === 'RUSAK BERAT'   ? '#e74c3c'
                     : '#95a5a6';
 
     html += '<div class="jalan-card">';
@@ -221,7 +222,7 @@ function closePanel() {
 map.on('click', function () { closePanel(); });
 
 // ── KONVERSI ESRI JSON → GEOJSON ──────────────────────────────────
-// 4_kelurahan.json menggunakan format ESRI FeatureSet (bukan GeoJSON)
+// Batas 4 Kelurahan.json menggunakan format ESRI FeatureSet (bukan GeoJSON)
 // geometryType: esriGeometryPolygon, geometry: { rings: [...] }
 function esriToGeoJSON(esriData) {
   var features = (esriData.features || []).map(function (f) {
@@ -329,8 +330,8 @@ fetch('JALAN KELURAHAN.json')
     checkLoaded();
   });
 
-// ── GEOJSON: 4 KELURAHAN (dari 4_kelurahan.json, format ESRI) ─────
-fetch('4_kelurahan.json')
+// ── GEOJSON: Batas 4 KELURAHAN (dari Batas 4 Kelurahan.json, format ESRI) ─────
+fetch('Batas 4 Kelurahan.json')
   .then(function (r) {
     if (!r.ok) throw new Error('HTTP ' + r.status);
     return r.json();
@@ -502,8 +503,9 @@ function buildLegendHTML(kelurahanFeatures) {
     '<h4>Legenda</h4>',
     '<div class="legend-section">Kondisi Jalan</div>',
     '<div class="legend-row"><span class="lg-line" style="background:#27ae60"></span> Baik</div>',
-    '<div class="legend-row"><span class="lg-line" style="background:#f39c12"></span> Kurang Baik</div>',
-    '<div class="legend-row"><span class="lg-line" style="background:#e74c3c"></span> Tidak Baik</div>',
+    '<div class="legend-row"><span class="lg-line" style="background:#f39c12"></span> Rusak Ringan</div>',
+    '<div class="legend-row"><span class="lg-line" style="background:#FFFF00"></span> Rusak Sedang</div>',
+    '<div class="legend-row"><span class="lg-line" style="background:#e74c3c"></span> Rusak Berat</div>',
     '<div class="legend-section">Batas Kelurahan</div>'
   ];
 
