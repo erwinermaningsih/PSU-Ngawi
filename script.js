@@ -71,8 +71,8 @@ function escapeHtml(str) {
 function warnaKondisi(kondisi) {
   var k = (kondisi || '').trim().toUpperCase();
   if (k === 'BAIK')          return '#27ae60';
-  if (k === 'RUSAK RINGAN')  return '#f39c12';
-  if (k === 'RUSAK SEDANG')  return '#f1c40f';
+  if (k === 'RUSAK RINGAN')  return '#f1c40f';
+  if (k === 'RUSAK SEDANG')  return '#f39c12';
   if (k === 'RUSAK BERAT')   return '#e74c3c';
   return '#95a5a6'; // fallback kondisi tidak dikenal
 }
@@ -137,8 +137,8 @@ function tampilkanAtribut(judul, rows, tipe) {
       ? (kondisiRow.val || '').replace(/<[^>]+>/g, '').trim().toUpperCase()
       : '';
     var accentColor = kondisiTeks === 'BAIK'          ? '#27ae60'
-                    : kondisiTeks === 'RUSAK RINGAN'  ? '#f39c12'
-                    : kondisiTeks === 'RUSAK SEDANG'  ? '#f1c40f'
+                    : kondisiTeks === 'RUSAK RINGAN'  ? '#f1c40f'
+                    : kondisiTeks === 'RUSAK SEDANG'  ? '#f39c12'
                     : kondisiTeks === 'RUSAK BERAT'   ? '#e74c3c'
                     : '#95a5a6';
 
