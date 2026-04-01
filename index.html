@@ -61,6 +61,16 @@
   <div id="info-content"></div>
 </div>
 
+<!-- SEARCH BOX -->
+<div id="search-box" role="search" aria-label="Cari nama jalan">
+  <div class="search-inner">
+    <span class="search-icon" aria-hidden="true">🔍</span>
+    <input type="text" id="search-input" placeholder="Cari nama jalan…" autocomplete="off" aria-label="Masukkan nama jalan"/>
+    <button id="search-clear" class="search-clear hidden" title="Hapus pencarian" aria-label="Hapus">✕</button>
+  </div>
+  <ul id="search-results" class="search-results hidden" role="listbox" aria-label="Hasil pencarian jalan"></ul>
+</div>
+
 <!-- BASEMAP SWITCHER -->
 <div id="basemap-switcher" role="group" aria-label="Pilih basemap">
   <button class="bm-btn active" data-bm="satellite" title="Basemap Satelit" aria-label="Satelit">🛰️</button>
