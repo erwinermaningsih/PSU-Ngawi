@@ -112,7 +112,7 @@ function getKelurahanStyle(nama) {
 }
 
 // ── INFO PANEL ─────────────────────────────────────────────────────
-function tampilkanAtribut(judul, rows, tipe) {
+function tampilkanAtribut(judul, rows, tipe, extra) {
   document.getElementById('info-title').textContent = judul;
   var html = '';
 
@@ -190,6 +190,45 @@ function tampilkanAtribut(judul, rows, tipe) {
             + '</div>';
     }
 
+    // ── KOORDINAT AWAL & AKHIR ─────────────────────────────────────
+    if (extra) {
+      var sx = extra.startX, sy = extra.startY, ex = extra.endX, ey = extra.endY;
+      var hasStart = !isNaN(sx) && !isNaN(sy);
+      var hasEnd   = !isNaN(ex) && !isNaN(ey);
+      if (hasStart || hasEnd) {
+        html += '<div class="jc-coord-box">'
+              + '<span class="jc-coord-title">📌 Koordinat Ruas</span>';
+        if (hasStart) {
+          html += '<div class="jc-coord-row">'
+                + '<span class="jc-coord-label">Awal</span>'
+                + '<span class="jc-coord-val" title="Klik untuk salin" onclick="salinKoordinat(\'' + sy.toFixed(6) + ', ' + sx.toFixed(6) + '\')">'
+                + sy.toFixed(6) + ', ' + sx.toFixed(6)
+                + '</span></div>';
+        }
+        if (hasEnd) {
+          if (hasStart) html += '<div class="jc-coord-divider"></div>';
+          html += '<div class="jc-coord-row">'
+                + '<span class="jc-coord-label">Akhir</span>'
+                + '<span class="jc-coord-val" title="Klik untuk salin" onclick="salinKoordinat(\'' + ey.toFixed(6) + ', ' + ex.toFixed(6) + '\')">'
+                + ey.toFixed(6) + ', ' + ex.toFixed(6)
+                + '</span></div>';
+        }
+        html += '</div>';
+      }
+
+      // ── FOTO KONDISI JALAN ──────────────────────────────────────
+      html += '<div class="jc-foto-box">'
+            + '<div class="jc-foto-title"><span>📷</span> Foto Kondisi Jalan</div>';
+      if (extra.foto && extra.foto !== '-' && extra.foto !== '') {
+        html += '<img class="jc-foto-img" src="' + escapeHtml(extra.foto) + '" alt="Foto ' + escapeHtml(judul) + '" '
+              + 'loading="lazy" onerror="this.parentNode.innerHTML=\'<div class=jc-foto-placeholder><span>📷</span>Foto tidak tersedia</div>\'" '
+              + 'onclick="bukaLightbox(\'' + escapeHtml(extra.foto) + '\',\'' + escapeHtml(judul) + '\')">';
+      } else {
+        html += '<div class="jc-foto-placeholder"><span>📷</span>Belum ada foto untuk ruas ini</div>';
+      }
+      html += '</div>';
+    }
+
     html += '</div>';
 
   } else {
@@ -225,6 +264,7 @@ fetch('JALAN KELURAHAN.json')
     if (!data || !Array.isArray(data.features)) throw new Error('Format tidak valid');
 
     jalanStats.count = data.features.length;
+    initSearchIndex(data);   // ← indeks untuk fitur pencarian
     data.features.forEach(function (f) {
       var p = f.properties || {};
       jalanStats.totalPanjang += parseFloat(p.PANJANG_JA || 0) || 0;
@@ -258,6 +298,11 @@ fetch('JALAN KELURAHAN.json')
         var lebar     = (p.LEBAR_JALA  || p.LEBAR || '').toString().trim();
         var permukaan = (p.PERMUKAAN   || p.JENIS_PERM || '').toString().trim();
         var ket       = (p.KETERANGAN  || p.KET || '').toString().trim();
+        var foto      = (p.FOTO        || p.PHOTO || p.GAMBAR || '').toString().trim();
+        var startX    = parseFloat(p.START_X);
+        var startY    = parseFloat(p.START_Y);
+        var endX      = parseFloat(p.END_X);
+        var endY      = parseFloat(p.END_Y);
 
         layer.bindTooltip(nama, {
           permanent: false,
@@ -279,7 +324,11 @@ fetch('JALAN KELURAHAN.json')
             { key: 'Panjang',     val: panjang > 0 ? panjang.toFixed(0) + ' m' : '-' }
           ];
           if (ket && ket !== '-') rowData.push({ key: 'Keterangan', val: ket });
-          tampilkanAtribut('🛣️ ' + nama, rowData, 'jalan');
+          tampilkanAtribut('🛣️ ' + nama, rowData, 'jalan', {
+            startX: startX, startY: startY,
+            endX: endX, endY: endY,
+            foto: foto
+          });
         });
 
         layer.on('mouseover', function () {
@@ -530,3 +579,239 @@ function tryFitBounds() {
     }
   } catch (e) { /* abaikan */ }
 }
+
+// ── SALIN KOORDINAT ───────────────────────────────────────────────
+function salinKoordinat(teks) {
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(teks).then(function() {
+      tampilkanNotif('Koordinat disalin: ' + teks, 'info');
+    });
+  } else {
+    var el = document.createElement('textarea');
+    el.value = teks;
+    document.body.appendChild(el);
+    el.select();
+    document.execCommand('copy');
+    document.body.removeChild(el);
+    tampilkanNotif('Koordinat disalin: ' + teks, 'info');
+  }
+}
+
+// ── LIGHTBOX FOTO ─────────────────────────────────────────────────
+function bukaLightbox(src, judul) {
+  var lb = document.createElement('div');
+  lb.id = 'foto-lightbox';
+  lb.innerHTML = '<button id="foto-lightbox-close" title="Tutup">✕</button>'
+               + '<img src="' + src + '" alt="' + judul + '">';
+  document.body.appendChild(lb);
+  lb.addEventListener('click', function(e) {
+    if (e.target === lb || e.target.id === 'foto-lightbox-close') {
+      document.body.removeChild(lb);
+    }
+  });
+  document.addEventListener('keydown', function escClose(e) {
+    if (e.key === 'Escape' && document.getElementById('foto-lightbox')) {
+      document.body.removeChild(lb);
+      document.removeEventListener('keydown', escClose);
+    }
+  });
+}
+
+// ── SEARCH ENGINE ─────────────────────────────────────────────────
+var allJalanFeatures = [];   // populated setelah GeoJSON jalan dimuat
+var searchDebounce  = null;
+
+// Simpan semua layer jalan beserta feature-nya untuk navigasi
+var jalanLayerMap = [];      // [{ feature, layer }]
+
+// Patch: setelah geoJalan selesai dibuat, kumpulkan layer map
+// (dipanggil dari dalam then() chain data jalan)
+function initSearchIndex(data) {
+  allJalanFeatures = data.features || [];
+}
+
+// Fungsi memanggil search index
+function setupSearch() {
+  var input   = document.getElementById('search-input');
+  var results = document.getElementById('search-results');
+  var clearBtn = document.getElementById('search-clear');
+
+  if (!input || !results) return;
+
+  input.addEventListener('input', function() {
+    var q = this.value.trim();
+    clearBtn.classList.toggle('hidden', q.length === 0);
+    clearTimeout(searchDebounce);
+    searchDebounce = setTimeout(function() { runSearch(q); }, 180);
+  });
+
+  input.addEventListener('keydown', function(e) {
+    var items = results.querySelectorAll('li:not(.search-empty)');
+    var active = results.querySelector('li.active');
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      if (!active) { if(items[0]) items[0].classList.add('active'); }
+      else {
+        active.classList.remove('active');
+        var next = active.nextElementSibling;
+        if (next && !next.classList.contains('search-empty')) next.classList.add('active');
+        else if(items[0]) items[0].classList.add('active');
+      }
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      if (!active) { if(items[items.length-1]) items[items.length-1].classList.add('active'); }
+      else {
+        active.classList.remove('active');
+        var prev = active.previousElementSibling;
+        if (prev) prev.classList.add('active');
+        else if(items[items.length-1]) items[items.length-1].classList.add('active');
+      }
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      var act = results.querySelector('li.active');
+      if (act) act.click();
+    } else if (e.key === 'Escape') {
+      tutupSearch();
+    }
+  });
+
+  clearBtn.addEventListener('click', function() {
+    input.value = '';
+    clearBtn.classList.add('hidden');
+    tutupSearch();
+    input.focus();
+  });
+
+  // Klik di luar → tutup
+  document.addEventListener('click', function(e) {
+    var box = document.getElementById('search-box');
+    if (box && !box.contains(e.target)) tutupSearch();
+  });
+}
+
+function tutupSearch() {
+  var results = document.getElementById('search-results');
+  if (results) results.classList.add('hidden');
+}
+
+function runSearch(q) {
+  var results = document.getElementById('search-results');
+  if (!results) return;
+
+  if (!q || q.length < 2) {
+    results.classList.add('hidden');
+    results.innerHTML = '';
+    return;
+  }
+
+  var lower = q.toLowerCase();
+  var hits = allJalanFeatures.filter(function(f) {
+    var p = f.properties || {};
+    var nama = (p.NAMA_RUAS || '').toLowerCase();
+    var kel  = (p.KELURAHAN || '').toLowerCase();
+    return nama.includes(lower) || kel.includes(lower);
+  }).slice(0, 10);
+
+  if (hits.length === 0) {
+    results.innerHTML = '<li class="search-empty">Tidak ditemukan hasil untuk <b>' + escapeHtml(q) + '</b></li>';
+    results.classList.remove('hidden');
+    return;
+  }
+
+  results.innerHTML = '';
+  hits.forEach(function(f) {
+    var p       = f.properties || {};
+    var nama    = (p.NAMA_RUAS  || '-').trim();
+    var kel     = (p.KELURAHAN  || '-').trim();
+    var kondisi = (p.KONDISI_JA || '-').trim();
+    var panjang = parseFloat(p.PANJANG_JA || 0) || 0;
+    var warna   = warnaKondisi(kondisi);
+
+    var li = document.createElement('li');
+    li.setAttribute('role', 'option');
+    li.innerHTML = '<span class="sr-nama">' + escapeHtml(nama) + '</span>'
+      + '<span class="sr-meta">'
+      + '<span class="sr-kondisi-dot" style="background:' + warna + '"></span>'
+      + escapeHtml(kondisi) + ' • ' + escapeHtml(kel)
+      + (panjang > 0 ? ' • ' + panjang.toFixed(0) + ' m' : '')
+      + '</span>';
+
+    li.addEventListener('click', function() {
+      zoomKeJalan(f);
+      tutupSearch();
+      document.getElementById('search-input').value = nama;
+    });
+
+    results.appendChild(li);
+  });
+
+  results.classList.remove('hidden');
+}
+
+function zoomKeJalan(feature) {
+  try {
+    // Cari layer yang sesuai di geoJalan
+    var targetLayer = null;
+    if (geoJalan) {
+      geoJalan.eachLayer(function(layer) {
+        if (layer.feature === feature) targetLayer = layer;
+      });
+    }
+
+    // Hitung bounds dari geometry
+    var coords = feature.geometry.coordinates;
+    var latlngs = coords.map(function(c) { return [c[1], c[0]]; });
+    var bounds = L.latLngBounds(latlngs);
+
+    map.fitBounds(bounds, { padding: [80, 80], maxZoom: 18 });
+
+    if (targetLayer) {
+      // Flash highlight
+      var orig = { weight: 4, opacity: 0.9 };
+      targetLayer.setStyle({ weight: 9, opacity: 1, color: '#fff' });
+      setTimeout(function() {
+        targetLayer.setStyle({ weight: 8, opacity: 1, color: warnaKondisi(feature.properties.KONDISI_JA) });
+        setTimeout(function() { targetLayer.setStyle(orig); }, 400);
+      }, 300);
+
+      // Tampilkan info panel
+      var p         = feature.properties || {};
+      var nama      = (p.NAMA_RUAS   || '-').trim();
+      var kondisi   = (p.KONDISI_JA  || '-').trim();
+      var jenis     = (p.JENIS_JALA  || '-').trim();
+      var kel       = (p.KELURAHAN   || '-').trim();
+      var kec       = (p.KECAMATAN   || '-').trim();
+      var panjang   = parseFloat(p.PANJANG_JA || 0) || 0;
+      var lebar     = (p.LEBAR_JALA  || p.LEBAR || '').toString().trim();
+      var permukaan = (p.PERMUKAAN   || '').toString().trim();
+      var ket       = (p.KETERANGAN  || '').toString().trim();
+      var foto      = (p.FOTO        || p.PHOTO || p.GAMBAR || '').toString().trim();
+      var startX    = parseFloat(p.START_X);
+      var startY    = parseFloat(p.START_Y);
+      var endX      = parseFloat(p.END_X);
+      var endY      = parseFloat(p.END_Y);
+
+      var rowData = [
+        { key: 'Nama Ruas',   val: nama },
+        { key: 'Kelurahan',   val: kel },
+        { key: 'Kecamatan',   val: kec },
+        { key: 'Kondisi',     val: badgeKondisi(kondisi), isHtml: true },
+        { key: 'Jenis Jalan', val: jenis },
+        { key: 'Permukaan',   val: permukaan || '-' },
+        { key: 'Lebar',       val: lebar ? lebar + ' m' : '-' },
+        { key: 'Panjang',     val: panjang > 0 ? panjang.toFixed(0) + ' m' : '-' }
+      ];
+      if (ket && ket !== '-') rowData.push({ key: 'Keterangan', val: ket });
+      tampilkanAtribut('🛣️ ' + nama, rowData, 'jalan', {
+        startX: startX, startY: startY,
+        endX: endX, endY: endY,
+        foto: foto
+      });
+    }
+  } catch(e) { console.warn('zoomKeJalan error:', e); }
+}
+
+// Panggil setupSearch setelah DOM siap
+document.addEventListener('DOMContentLoaded', function() {
+  setupSearch();
+});
