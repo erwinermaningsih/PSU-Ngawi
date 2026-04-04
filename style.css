@@ -1192,3 +1192,103 @@ html, body {
 .lg-fasum-item:nth-child(3) {
   grid-column: 1 / -1;
 }
+
+/* ── BREAKDOWN FASILITAS UMUM ─────────────────────────────────────── */
+.bk-fasum-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.bk-fasum-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  background: var(--surface);
+  border-radius: 9px;
+  border: 1px solid var(--border);
+  transition: background .15s;
+}
+
+.bk-fasum-card:hover {
+  background: var(--surface-dim, #f4f6f9);
+}
+
+.bk-fasum-icon {
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  font-size: 17px;
+  flex-shrink: 0;
+}
+
+.bk-fasum-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.bk-fasum-name {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--text-main);
+  line-height: 1.2;
+}
+
+.bk-fasum-count {
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.bk-fasum-pct {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--text-muted);
+  min-width: 36px;
+  text-align: right;
+}
+
+/* ── METRIC ROW (Panjang + Lebar berdampingan) ──────────────────── */
+.jc-metrics-row {
+  display: flex;
+  gap: 8px;
+  margin: 10px 14px 4px;
+}
+
+.jc-metric-box {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  background: var(--surface-dim);
+  border-radius: 10px;
+  padding: 10px 10px 8px;
+  border: 1px solid;
+}
+
+.jc-metric-icon {
+  font-size: 16px;
+  line-height: 1;
+}
+
+.jc-metric-label {
+  font-size: 9.5px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: .06em;
+}
+
+.jc-metric-val {
+  font-size: 17px;
+  font-weight: 800;
+  font-family: var(--mono);
+  letter-spacing: -.02em;
+}
