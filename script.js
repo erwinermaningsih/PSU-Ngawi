@@ -71,8 +71,8 @@ function escapeHtml(str) {
 function warnaKondisi(kondisi) {
   var k = (kondisi || '').trim().toUpperCase();
   if (k === 'BAIK')          return '#27ae60';
-  if (k === 'RUSAK RINGAN')  return '#f1c40f';
-  if (k === 'RUSAK SEDANG')  return '#f39c12';
+  if (k === 'RUSAK RINGAN')  return '#f9ca24';  // kuning
+  if (k === 'RUSAK SEDANG')  return '#f0932b';  // orange
   if (k === 'RUSAK BERAT')   return '#e74c3c';
   return '#95a5a6'; // fallback kondisi tidak dikenal
 }
@@ -137,8 +137,8 @@ function tampilkanAtribut(judul, rows, tipe, extra) {
       ? (kondisiRow.val || '').replace(/<[^>]+>/g, '').trim().toUpperCase()
       : '';
     var accentColor = kondisiTeks === 'BAIK'          ? '#27ae60'
-                    : kondisiTeks === 'RUSAK RINGAN'  ? '#f1c40f'
-                    : kondisiTeks === 'RUSAK SEDANG'  ? '#f39c12'
+                    : kondisiTeks === 'RUSAK RINGAN'  ? '#f9ca24'
+                    : kondisiTeks === 'RUSAK SEDANG'  ? '#f0932b'
                     : kondisiTeks === 'RUSAK BERAT'   ? '#e74c3c'
                     : '#95a5a6';
 
@@ -157,7 +157,8 @@ function tampilkanAtribut(judul, rows, tipe, extra) {
       { icon: '🏘️', label: 'Kecamatan',  row: kecamatanRow },
       { icon: '🏗️', label: 'Jenis Jalan', row: jenisRow },
       { icon: '🛣️', label: 'Permukaan',   row: permukaanRow },
-      { icon: '↔️', label: 'Lebar',       row: lebarRow }
+      { icon: '↔️', label: 'Lebar',       row: lebarRow },
+      { icon: '📐', label: 'Tebal Jalan', row: getRow('Tebal Jalan') }
     ];
 
     var adaInfo = false;
@@ -268,18 +269,30 @@ function tampilkanAtribut(judul, rows, tipe, extra) {
   }
 
   document.getElementById('info-content').innerHTML = html;
-  document.getElementById('info-panel').classList.remove('hidden');
+  _showInfoPanel();
 }
 
 function closePanel() {
   document.getElementById('info-panel').classList.add('hidden');
+  var lp = document.getElementById('layer-panel');
+  if (lp) lp.classList.remove('behind');
   hideJangkauan();
+}
+
+function _showInfoPanel() {
+  document.getElementById('info-panel').classList.remove('hidden');
+  var lp = document.getElementById('layer-panel');
+  if (lp) lp.classList.add('behind');
 }
 
 map.on('click', function () { closePanel(); });
 
 // ── GEOJSON: JALAN ────────────────────────────────────────────────
-var jalanStats = { count: 0, totalPanjang: 0 };
+var jalanStats = {
+  count: 0, totalPanjang: 0,
+  kondisi: { 'BAIK': 0, 'RUSAK RINGAN': 0, 'RUSAK SEDANG': 0, 'RUSAK BERAT': 0 },
+  panjangKondisi: { 'BAIK': 0, 'RUSAK RINGAN': 0, 'RUSAK SEDANG': 0, 'RUSAK BERAT': 0 }
+};
 
 fetch('JALAN KELURAHAN.json')
   .then(function (r) {
@@ -290,10 +303,16 @@ fetch('JALAN KELURAHAN.json')
     if (!data || !Array.isArray(data.features)) throw new Error('Format tidak valid');
 
     jalanStats.count = data.features.length;
-    initSearchIndex(data);   // ← indeks untuk fitur pencarian
+    initSearchIndex(data);
     data.features.forEach(function (f) {
       var p = f.properties || {};
-      jalanStats.totalPanjang += parseFloat(p.PANJANG_JA || 0) || 0;
+      var panjang = parseFloat(p.PANJANG_JA || 0) || 0;
+      var k = (p.KONDISI_JA || '').trim().toUpperCase();
+      jalanStats.totalPanjang += panjang;
+      if (jalanStats.kondisi[k] !== undefined) {
+        jalanStats.kondisi[k]++;
+        jalanStats.panjangKondisi[k] += panjang;
+      }
     });
 
     document.getElementById('total-jalan').textContent = jalanStats.count;
@@ -301,6 +320,8 @@ fetch('JALAN KELURAHAN.json')
       jalanStats.totalPanjang >= 1000
         ? (jalanStats.totalPanjang / 1000).toFixed(2) + ' km'
         : jalanStats.totalPanjang.toFixed(0) + ' m';
+
+    setupStatChipClick();
 
     geoJalan = L.geoJSON(data, {
       style: function (feature) {
@@ -322,6 +343,7 @@ fetch('JALAN KELURAHAN.json')
         var kec       = (p.KECAMATAN   || '-').trim();
         var panjang   = parseFloat(p.PANJANG_JA || 0) || 0;
         var lebar     = (p.LEBAR_JALA  || p.LEBAR || '').toString().trim();
+        var tebal     = (p.TEBAL_JALA  || p.TEBAL || '').toString().trim();
         var permukaan = (p.PERMUKAAN   || p.JENIS_PERM || '').toString().trim();
         var ket       = (p.KETERANGAN  || p.KET || '').toString().trim();
         var fotoRaw   = (p.FOTO || p.PHOTO || p.GAMBAR || '').toString().trim();
@@ -341,14 +363,15 @@ fetch('JALAN KELURAHAN.json')
         layer.on('click', function (e) {
           L.DomEvent.stopPropagation(e);
           var rowData = [
-            { key: 'Nama Ruas',   val: nama },
-            { key: 'Kelurahan',   val: kel },
-            { key: 'Kecamatan',   val: kec },
-            { key: 'Kondisi',     val: badgeKondisi(kondisi), isHtml: true },
-            { key: 'Jenis Jalan', val: jenis },
-            { key: 'Permukaan',   val: permukaan || '-' },
-            { key: 'Lebar',       val: lebar ? lebar + ' m' : '-' },
-            { key: 'Panjang',     val: panjang > 0 ? panjang.toFixed(0) + ' m' : '-' }
+            { key: 'Nama Ruas',    val: nama },
+            { key: 'Kelurahan',    val: kel },
+            { key: 'Kecamatan',    val: kec },
+            { key: 'Kondisi',      val: badgeKondisi(kondisi), isHtml: true },
+            { key: 'Jenis Jalan',  val: jenis },
+            { key: 'Permukaan',    val: permukaan || '-' },
+            { key: 'Lebar',        val: lebar ? lebar + ' m' : '-' },
+            { key: 'Tebal Jalan',  val: tebal ? tebal + ' cm' : '-' },
+            { key: 'Panjang',      val: panjang > 0 ? panjang.toFixed(0) + ' m' : '-' }
           ];
           if (ket && ket !== '-') rowData.push({ key: 'Keterangan', val: ket });
           tampilkanAtribut('🛣️ ' + nama, rowData, 'jalan', {
@@ -501,6 +524,74 @@ Papa.parse('fasilitas_umum.csv', {
   }
 });
 
+// ── STAT CHIP KONDISI BREAKDOWN ────────────────────────────────────
+function setupStatChipClick() {
+  var chips = document.querySelectorAll('.stat-chip[data-stat]');
+  chips.forEach(function(chip) {
+    chip.style.cursor = 'pointer';
+    chip.setAttribute('title', 'Klik untuk lihat rincian kondisi');
+    chip.addEventListener('click', function(e) {
+      e.stopPropagation();
+      tampilkanBreakdownKondisi();
+    });
+  });
+}
+
+function tampilkanBreakdownKondisi() {
+  var defs = [
+    { key: 'BAIK',         label: 'Baik',         color: '#27ae60', icon: '✅' },
+    { key: 'RUSAK RINGAN', label: 'Rusak Ringan',  color: '#f9ca24', icon: '🟡' },
+    { key: 'RUSAK SEDANG', label: 'Rusak Sedang',  color: '#f0932b', icon: '🟠' },
+    { key: 'RUSAK BERAT',  label: 'Rusak Berat',   color: '#e74c3c', icon: '🔴' }
+  ];
+
+  var totalSeg = jalanStats.count || 0;
+  var totalPjg = jalanStats.totalPanjang || 0;
+
+  var html = '<div class="breakdown-wrap">';
+
+  // Bar chart proporsi
+  html += '<div class="bk-bar-stack">';
+  defs.forEach(function(d) {
+    var pct = totalSeg > 0 ? (jalanStats.kondisi[d.key] / totalSeg * 100) : 0;
+    if (pct > 0) {
+      html += '<div class="bk-bar-seg" style="width:' + pct.toFixed(1) + '%;background:' + d.color + '" '
+            + 'title="' + d.label + ': ' + pct.toFixed(1) + '%"></div>';
+    }
+  });
+  html += '</div>';
+
+  // Tabel rincian
+  html += '<div class="bk-table">';
+  defs.forEach(function(d) {
+    var jml   = jalanStats.kondisi[d.key] || 0;
+    var pjg   = jalanStats.panjangKondisi[d.key] || 0;
+    var pct   = totalSeg > 0 ? (jml / totalSeg * 100).toFixed(1) : '0.0';
+    var pjgTxt = pjg >= 1000 ? (pjg/1000).toFixed(2) + ' km' : pjg.toFixed(0) + ' m';
+    html += '<div class="bk-row">'
+          + '<span class="bk-dot" style="background:' + d.color + '"></span>'
+          + '<span class="bk-label">' + d.label + '</span>'
+          + '<span class="bk-count">' + jml + ' segmen</span>'
+          + '<span class="bk-panjang">' + pjgTxt + '</span>'
+          + '<span class="bk-pct">' + pct + '%</span>'
+          + '</div>';
+  });
+  html += '</div>';
+
+  // Ringkasan total
+  var totalPjgTxt = totalPjg >= 1000 ? (totalPjg/1000).toFixed(2) + ' km' : totalPjg.toFixed(0) + ' m';
+  html += '<div class="bk-total">'
+        + '<span>Total: <b>' + totalSeg + '</b> segmen</span>'
+        + '<span><b>' + totalPjgTxt + '</b></span>'
+        + '</div>';
+
+  html += '</div>';
+
+  document.getElementById('info-title').textContent = '📊 Rincian Kondisi Jalan';
+  document.getElementById('info-content').innerHTML = html;
+  _showInfoPanel();
+}
+
 // ── BASEMAP SWITCHER ───────────────────────────────────────────────
 document.querySelectorAll('.bm-btn').forEach(function (btn) {
   btn.addEventListener('click', function () {
@@ -544,8 +635,8 @@ function buildLegendHTML(kelurahanFeatures) {
     '<h4>Legenda</h4>',
     '<div class="legend-section">Kondisi Jalan</div>',
     '<div class="legend-row"><span class="lg-line" style="background:#27ae60"></span> Baik</div>',
-    '<div class="legend-row"><span class="lg-line" style="background:#f39c12"></span> Rusak Ringan</div>',
-    '<div class="legend-row"><span class="lg-line" style="background:#f1c40f"></span> Rusak Sedang</div>',
+    '<div class="legend-row"><span class="lg-line" style="background:#f9ca24"></span> Rusak Ringan</div>',
+    '<div class="legend-row"><span class="lg-line" style="background:#f0932b"></span> Rusak Sedang</div>',
     '<div class="legend-row"><span class="lg-line" style="background:#e74c3c"></span> Rusak Berat</div>',
     '<div class="legend-section">Batas Kelurahan</div>'
   ];
@@ -564,14 +655,24 @@ function buildLegendHTML(kelurahanFeatures) {
     );
   });
 
-  html = html.concat([
-    '<div class="legend-section">Fasilitas Umum</div>',
-    '<div class="legend-row"><span style="font-size:15px;line-height:1">🎓</span> Sekolah</div>',
-    '<div class="legend-row"><span style="font-size:15px;line-height:1">🛒</span> Pasar</div>',
-    '<div class="legend-row"><span style="font-size:15px;line-height:1">🏥</span> Fasilitas Kesehatan</div>',
-    '<div class="legend-row"><span style="font-size:15px;line-height:1">🕌</span> Tempat Ibadah</div>',
-    '<div class="legend-row"><span style="font-size:15px;line-height:1">🏢</span> Perkantoran</div>'
-  ]);
+  var fasumDefs = [
+    { icon: '🎓', label: 'Sekolah',             color: '#27ae60' },
+    { icon: '🛒', label: 'Pasar',               color: '#e67e22' },
+    { icon: '🏥', label: 'Fasilitas Kesehatan', color: '#e74c3c' },
+    { icon: '🕌', label: 'Tempat Ibadah',       color: '#8e44ad' },
+    { icon: '🏢', label: 'Perkantoran',         color: '#2980b9' }
+  ];
+  html.push('<div class="legend-section">Fasilitas Umum</div>');
+  html.push('<div class="lg-fasum-grid">');
+  fasumDefs.forEach(function(f) {
+    html.push(
+      '<div class="lg-fasum-item">' +
+      '<span class="lg-fasum-icon" style="background:' + f.color + '22;border-color:' + f.color + '40">' + f.icon + '</span>' +
+      '<span class="lg-fasum-label">' + f.label + '</span>' +
+      '</div>'
+    );
+  });
+  html.push('</div>');
 
   return html.join('');
 }
@@ -867,6 +968,7 @@ function zoomKeJalan(feature) {
       var kec       = (p.KECAMATAN   || '-').trim();
       var panjang   = parseFloat(p.PANJANG_JA || 0) || 0;
       var lebar     = (p.LEBAR_JALA  || p.LEBAR || '').toString().trim();
+      var tebal     = (p.TEBAL_JALA  || p.TEBAL || '').toString().trim();
       var permukaan = (p.PERMUKAAN   || '').toString().trim();
       var ket       = (p.KETERANGAN  || '').toString().trim();
       var fotoRaw   = (p.FOTO || p.PHOTO || p.GAMBAR || '').toString().trim();
@@ -884,6 +986,7 @@ function zoomKeJalan(feature) {
         { key: 'Jenis Jalan', val: jenis },
         { key: 'Permukaan',   val: permukaan || '-' },
         { key: 'Lebar',       val: lebar ? lebar + ' m' : '-' },
+        { key: 'Tebal Jalan', val: tebal ? tebal + ' cm' : '-' },
         { key: 'Panjang',     val: panjang > 0 ? panjang.toFixed(0) + ' m' : '-' }
       ];
       if (ket && ket !== '-') rowData.push({ key: 'Keterangan', val: ket });
