@@ -157,8 +157,7 @@ function tampilkanAtribut(judul, rows, tipe, extra) {
       { icon: '🏘️', label: 'Kecamatan',  row: kecamatanRow },
       { icon: '🏗️', label: 'Jenis Jalan', row: jenisRow },
       { icon: '🛣️', label: 'Permukaan',   row: permukaanRow },
-      { icon: '↔️', label: 'Lebar',       row: lebarRow },
-      { icon: '📐', label: 'Tebal Jalan', row: getRow('Tebal Jalan') }
+      { icon: '↔️', label: 'Lebar',       row: lebarRow }
     ];
 
     var adaInfo = false;
@@ -184,11 +183,22 @@ function tampilkanAtribut(judul, rows, tipe, extra) {
       });
     }
 
+    var lebarMetricRow = getRow('Lebar');
     if (panjangRow && panjangRow.val && panjangRow.val !== '-') {
-      html += '<div class="jc-panjang-box" style="border-color:' + accentColor + '20">'
-            + '<span class="jc-panjang-label">📏 Panjang Ruas</span>'
-            + '<span class="jc-panjang-val" style="color:' + accentColor + '">' + escapeHtml(panjangRow.val) + '</span>'
+      html += '<div class="jc-metrics-row">';
+      html += '<div class="jc-metric-box" style="border-color:' + accentColor + '30">'
+            + '<span class="jc-metric-icon">📏</span>'
+            + '<span class="jc-metric-label">Panjang</span>'
+            + '<span class="jc-metric-val" style="color:' + accentColor + '">' + escapeHtml(panjangRow.val) + '</span>'
             + '</div>';
+      if (lebarMetricRow && lebarMetricRow.val && lebarMetricRow.val !== '-') {
+        html += '<div class="jc-metric-box" style="border-color:' + accentColor + '30">'
+              + '<span class="jc-metric-icon">↔️</span>'
+              + '<span class="jc-metric-label">Lebar</span>'
+              + '<span class="jc-metric-val" style="color:' + accentColor + '">' + escapeHtml(lebarMetricRow.val) + '</span>'
+              + '</div>';
+      }
+      html += '</div>';
     }
 
     // ── KOORDINAT AWAL & AKHIR ─────────────────────────────────────
@@ -343,7 +353,6 @@ fetch('JALAN KELURAHAN.json')
         var kec       = (p.KECAMATAN   || '-').trim();
         var panjang   = parseFloat(p.PANJANG_JA || 0) || 0;
         var lebar     = (p.LEBAR_JALA  || p.LEBAR || '').toString().trim();
-        var tebal     = (p.TEBAL_JALA  || p.TEBAL || '').toString().trim();
         var permukaan = (p.PERMUKAAN   || p.JENIS_PERM || '').toString().trim();
         var ket       = (p.KETERANGAN  || p.KET || '').toString().trim();
         var fotoRaw   = (p.FOTO || p.PHOTO || p.GAMBAR || '').toString().trim();
@@ -370,7 +379,6 @@ fetch('JALAN KELURAHAN.json')
             { key: 'Jenis Jalan',  val: jenis },
             { key: 'Permukaan',    val: permukaan || '-' },
             { key: 'Lebar',        val: lebar ? lebar + ' m' : '-' },
-            { key: 'Tebal Jalan',  val: tebal ? tebal + ' cm' : '-' },
             { key: 'Panjang',      val: panjang > 0 ? panjang.toFixed(0) + ' m' : '-' }
           ];
           if (ket && ket !== '-') rowData.push({ key: 'Keterangan', val: ket });
@@ -451,6 +459,12 @@ function warnaFasum(kat) {
   return colors[kat] || '#34495e';
 }
 
+// ── FASUM STATS ───────────────────────────────────────────────────
+var fasumStats = {
+  total: 0,
+  kategori: {}
+};
+
 // ── CSV: FASILITAS UMUM ────────────────────────────────────────────
 Papa.parse('fasilitas_umum.csv', {
   download:       true,
@@ -467,6 +481,12 @@ Papa.parse('fasilitas_umum.csv', {
     });
 
     document.getElementById('total-fasum').textContent = valid.length;
+    fasumStats.total = valid.length;
+    fasumStats.kategori = {};
+    valid.forEach(function(r) {
+      var kat = (r.kategori || 'Umum').trim();
+      fasumStats.kategori[kat] = (fasumStats.kategori[kat] || 0) + 1;
+    });
 
     valid.forEach(function (row) {
       var lat   = parseFloat(row.y_latitude);
@@ -515,6 +535,7 @@ Papa.parse('fasilitas_umum.csv', {
       marker.addTo(layerFasum);
     });
 
+    setupStatChipClick();
     checkLoaded();
   },
   error: function (err) {
@@ -526,15 +547,25 @@ Papa.parse('fasilitas_umum.csv', {
 
 // ── STAT CHIP KONDISI BREAKDOWN ────────────────────────────────────
 function setupStatChipClick() {
-  var chips = document.querySelectorAll('.stat-chip[data-stat]');
-  chips.forEach(function(chip) {
+  // jalan & panjang chips → rincian kondisi jalan
+  document.querySelectorAll('.stat-chip[data-stat="jalan"], .stat-chip[data-stat="panjang"]').forEach(function(chip) {
     chip.style.cursor = 'pointer';
-    chip.setAttribute('title', 'Klik untuk lihat rincian kondisi');
+    chip.setAttribute('title', 'Klik untuk lihat rincian kondisi jalan');
     chip.addEventListener('click', function(e) {
       e.stopPropagation();
       tampilkanBreakdownKondisi();
     });
   });
+  // fasum chip → rincian fasilitas umum
+  var chipFasum = document.querySelector('.stat-chip[data-stat="fasum"]');
+  if (chipFasum) {
+    chipFasum.style.cursor = 'pointer';
+    chipFasum.setAttribute('title', 'Klik untuk lihat rincian fasilitas umum');
+    chipFasum.addEventListener('click', function(e) {
+      e.stopPropagation();
+      tampilkanBreakdownFasum();
+    });
+  }
 }
 
 function tampilkanBreakdownKondisi() {
@@ -588,6 +619,60 @@ function tampilkanBreakdownKondisi() {
   html += '</div>';
 
   document.getElementById('info-title').textContent = '📊 Rincian Kondisi Jalan';
+  document.getElementById('info-content').innerHTML = html;
+  _showInfoPanel();
+}
+
+// ── BREAKDOWN FASILITAS UMUM ───────────────────────────────────────
+function tampilkanBreakdownFasum() {
+  var defs = [
+    { key: 'Sekolah',             icon: '🎓', color: '#27ae60' },
+    { key: 'Pasar',               icon: '🛒', color: '#e67e22' },
+    { key: 'Fasilitas Kesehatan', icon: '🏥', color: '#e74c3c' },
+    { key: 'Tempat Ibadah',       icon: '🕌', color: '#8e44ad' },
+    { key: 'Perkantoran',         icon: '🏢', color: '#2980b9' }
+  ];
+
+  var total = fasumStats.total || 0;
+  var html = '<div class="breakdown-wrap">';
+
+  // Bar stack
+  html += '<div class="bk-bar-stack">';
+  defs.forEach(function(d) {
+    var jml = fasumStats.kategori[d.key] || 0;
+    var pct = total > 0 ? (jml / total * 100) : 0;
+    if (pct > 0) {
+      html += '<div class="bk-bar-seg" style="width:' + pct.toFixed(1) + '%;background:' + d.color + '" '
+            + 'title="' + escapeHtml(d.key) + ': ' + jml + '"></div>';
+    }
+  });
+  html += '</div>';
+
+  // Grid kartu per kategori
+  html += '<div class="bk-fasum-grid">';
+  defs.forEach(function(d) {
+    var jml = fasumStats.kategori[d.key] || 0;
+    var pct = total > 0 ? (jml / total * 100).toFixed(0) : '0';
+    html += '<div class="bk-fasum-card" style="border-left:3px solid ' + d.color + '">'
+          + '<span class="bk-fasum-icon" style="background:' + d.color + '22">' + d.icon + '</span>'
+          + '<div class="bk-fasum-info">'
+          + '<span class="bk-fasum-name">' + escapeHtml(d.key) + '</span>'
+          + '<span class="bk-fasum-count" style="color:' + d.color + '">' + jml + ' unit</span>'
+          + '</div>'
+          + '<span class="bk-fasum-pct">' + pct + '%</span>'
+          + '</div>';
+  });
+  html += '</div>';
+
+  // Total
+  html += '<div class="bk-total">'
+        + '<span>Total Fasilitas Umum</span>'
+        + '<span><b>' + total + ' unit</b></span>'
+        + '</div>';
+
+  html += '</div>';
+
+  document.getElementById('info-title').textContent = '🏫 Rincian Fasilitas Umum';
   document.getElementById('info-content').innerHTML = html;
   _showInfoPanel();
 }
@@ -968,7 +1053,6 @@ function zoomKeJalan(feature) {
       var kec       = (p.KECAMATAN   || '-').trim();
       var panjang   = parseFloat(p.PANJANG_JA || 0) || 0;
       var lebar     = (p.LEBAR_JALA  || p.LEBAR || '').toString().trim();
-      var tebal     = (p.TEBAL_JALA  || p.TEBAL || '').toString().trim();
       var permukaan = (p.PERMUKAAN   || '').toString().trim();
       var ket       = (p.KETERANGAN  || '').toString().trim();
       var fotoRaw   = (p.FOTO || p.PHOTO || p.GAMBAR || '').toString().trim();
@@ -986,7 +1070,6 @@ function zoomKeJalan(feature) {
         { key: 'Jenis Jalan', val: jenis },
         { key: 'Permukaan',   val: permukaan || '-' },
         { key: 'Lebar',       val: lebar ? lebar + ' m' : '-' },
-        { key: 'Tebal Jalan', val: tebal ? tebal + ' cm' : '-' },
         { key: 'Panjang',     val: panjang > 0 ? panjang.toFixed(0) + ' m' : '-' }
       ];
       if (ket && ket !== '-') rowData.push({ key: 'Keterangan', val: ket });
