@@ -217,12 +217,38 @@ function tampilkanAtribut(judul, rows, tipe, extra) {
       }
 
       // ── FOTO KONDISI JALAN ──────────────────────────────────────
+      var fotoList = extra.fotoList || [];
       html += '<div class="jc-foto-box">'
-            + '<div class="jc-foto-title"><span>📷</span> Foto Kondisi Jalan</div>';
-      if (extra.foto && extra.foto !== '-' && extra.foto !== '') {
-        html += '<img class="jc-foto-img" src="' + escapeHtml(extra.foto) + '" alt="Foto ' + escapeHtml(judul) + '" '
-              + 'loading="lazy" onerror="this.parentNode.innerHTML=\'<div class=jc-foto-placeholder><span>📷</span>Foto tidak tersedia</div>\'" '
-              + 'onclick="bukaLightbox(\'' + escapeHtml(extra.foto) + '\',\'' + escapeHtml(judul) + '\')">';
+            + '<div class="jc-foto-title"><span>📷</span> Foto Kondisi Jalan'
+            + (fotoList.length > 1 ? ' <span class="jc-foto-count">(' + fotoList.length + ' foto)</span>' : '')
+            + '</div>';
+      if (fotoList.length > 0) {
+        var fotoId = 'carousel-' + Date.now();
+        html += '<div class="jc-carousel" id="' + fotoId + '" data-idx="0" data-total="' + fotoList.length + '">';
+        // Slides
+        html += '<div class="jc-carousel-track">';
+        fotoList.forEach(function(src, i) {
+          html += '<div class="jc-carousel-slide' + (i === 0 ? ' active' : '') + '">'
+                + '<img class="jc-foto-img" src="' + escapeHtml(src) + '" alt="Foto ' + (i+1) + ' ' + escapeHtml(judul) + '" '
+                + 'loading="lazy" '
+                + 'onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'" '
+                + 'onclick="bukaLightbox(' + JSON.stringify(fotoList) + ',' + i + ')">'
+                + '<div class="jc-foto-placeholder" style="display:none"><span>📷</span>Foto tidak tersedia</div>'
+                + '</div>';
+        });
+        html += '</div>'; // track
+        // Navigasi hanya jika lebih dari 1 foto
+        if (fotoList.length > 1) {
+          html += '<button class="jc-carousel-btn prev" onclick="geserKarousel(\'' + fotoId + '\',-1)" title="Foto sebelumnya">&#8249;</button>'
+                + '<button class="jc-carousel-btn next" onclick="geserKarousel(\'' + fotoId + '\',1)" title="Foto berikutnya">&#8250;</button>'
+                + '<div class="jc-carousel-dots">';
+          for (var di = 0; di < fotoList.length; di++) {
+            html += '<span class="jc-dot' + (di === 0 ? ' active' : '') + '" onclick="geserKarousel(\'' + fotoId + '\',' + (di) + ',true)"></span>';
+          }
+          html += '</div>'
+                + '<div class="jc-carousel-counter"><span class="jc-cur">1</span>/<span>' + fotoList.length + '</span></div>';
+        }
+        html += '</div>'; // carousel
       } else {
         html += '<div class="jc-foto-placeholder"><span>📷</span>Belum ada foto untuk ruas ini</div>';
       }
@@ -298,7 +324,8 @@ fetch('JALAN KELURAHAN.json')
         var lebar     = (p.LEBAR_JALA  || p.LEBAR || '').toString().trim();
         var permukaan = (p.PERMUKAAN   || p.JENIS_PERM || '').toString().trim();
         var ket       = (p.KETERANGAN  || p.KET || '').toString().trim();
-        var foto      = (p.FOTO        || p.PHOTO || p.GAMBAR || '').toString().trim();
+        var fotoRaw   = (p.FOTO || p.PHOTO || p.GAMBAR || '').toString().trim();
+        var fotoList  = fotoRaw ? fotoRaw.split('|').map(function(s){ return s.trim(); }).filter(Boolean) : [];
         var startX    = parseFloat(p.START_X);
         var startY    = parseFloat(p.START_Y);
         var endX      = parseFloat(p.END_X);
@@ -327,7 +354,7 @@ fetch('JALAN KELURAHAN.json')
           tampilkanAtribut('🛣️ ' + nama, rowData, 'jalan', {
             startX: startX, startY: startY,
             endX: endX, endY: endY,
-            foto: foto
+            fotoList: fotoList
           });
         });
 
@@ -597,24 +624,81 @@ function salinKoordinat(teks) {
   }
 }
 
-// ── LIGHTBOX FOTO ─────────────────────────────────────────────────
-function bukaLightbox(src, judul) {
+// ── LIGHTBOX FOTO (multi-foto) ────────────────────────────────────
+function bukaLightbox(srcs, idx) {
+  // srcs bisa array atau string tunggal (backward compat)
+  var list = Array.isArray(srcs) ? srcs : [srcs];
+  var cur  = typeof idx === 'number' ? idx : 0;
+
+  function renderLb() {
+    var lb = document.getElementById('foto-lightbox');
+    lb.innerHTML =
+      '<button id="foto-lightbox-close" title="Tutup">✕</button>'
+      + '<img src="' + escapeHtml(list[cur]) + '" alt="Foto ' + (cur+1) + '">'
+      + (list.length > 1
+          ? '<div class="lb-nav">'
+            + '<button class="lb-btn" id="lb-prev">&#8249;</button>'
+            + '<span class="lb-counter">' + (cur+1) + ' / ' + list.length + '</span>'
+            + '<button class="lb-btn" id="lb-next">&#8250;</button>'
+            + '</div>'
+          : '');
+
+    document.getElementById('foto-lightbox-close').onclick = tutupLb;
+    if (list.length > 1) {
+      document.getElementById('lb-prev').onclick = function(e) {
+        e.stopPropagation();
+        cur = (cur - 1 + list.length) % list.length;
+        renderLb();
+      };
+      document.getElementById('lb-next').onclick = function(e) {
+        e.stopPropagation();
+        cur = (cur + 1) % list.length;
+        renderLb();
+      };
+    }
+  }
+
+  function tutupLb() {
+    var el = document.getElementById('foto-lightbox');
+    if (el) document.body.removeChild(el);
+    document.removeEventListener('keydown', lbKey);
+  }
+
+  function lbKey(e) {
+    if (e.key === 'Escape') { tutupLb(); }
+    else if (e.key === 'ArrowRight') { cur = (cur+1) % list.length; renderLb(); }
+    else if (e.key === 'ArrowLeft')  { cur = (cur-1+list.length) % list.length; renderLb(); }
+  }
+
+  // Buat elemen lightbox
   var lb = document.createElement('div');
   lb.id = 'foto-lightbox';
-  lb.innerHTML = '<button id="foto-lightbox-close" title="Tutup">✕</button>'
-               + '<img src="' + src + '" alt="' + judul + '">';
   document.body.appendChild(lb);
-  lb.addEventListener('click', function(e) {
-    if (e.target === lb || e.target.id === 'foto-lightbox-close') {
-      document.body.removeChild(lb);
-    }
-  });
-  document.addEventListener('keydown', function escClose(e) {
-    if (e.key === 'Escape' && document.getElementById('foto-lightbox')) {
-      document.body.removeChild(lb);
-      document.removeEventListener('keydown', escClose);
-    }
-  });
+  lb.addEventListener('click', function(e) { if (e.target === lb) tutupLb(); });
+  document.addEventListener('keydown', lbKey);
+  renderLb();
+}
+
+// ── CAROUSEL PANEL INFO ───────────────────────────────────────────
+function geserKarousel(id, val, isDirect) {
+  var el    = document.getElementById(id);
+  if (!el) return;
+  var total = parseInt(el.getAttribute('data-total'));
+  var cur   = parseInt(el.getAttribute('data-idx'));
+  var next  = isDirect ? val : (cur + val + total) % total;
+
+  // Sembunyikan slide lama, tampilkan baru
+  var slides = el.querySelectorAll('.jc-carousel-slide');
+  var dots   = el.querySelectorAll('.jc-dot');
+  var counter = el.querySelector('.jc-cur');
+
+  if (slides[cur]) slides[cur].classList.remove('active');
+  if (dots[cur])   dots[cur].classList.remove('active');
+  if (slides[next]) slides[next].classList.add('active');
+  if (dots[next])   dots[next].classList.add('active');
+  if (counter)      counter.textContent = next + 1;
+
+  el.setAttribute('data-idx', next);
 }
 
 // ── SEARCH ENGINE ─────────────────────────────────────────────────
@@ -785,7 +869,8 @@ function zoomKeJalan(feature) {
       var lebar     = (p.LEBAR_JALA  || p.LEBAR || '').toString().trim();
       var permukaan = (p.PERMUKAAN   || '').toString().trim();
       var ket       = (p.KETERANGAN  || '').toString().trim();
-      var foto      = (p.FOTO        || p.PHOTO || p.GAMBAR || '').toString().trim();
+      var fotoRaw   = (p.FOTO || p.PHOTO || p.GAMBAR || '').toString().trim();
+      var fotoList  = fotoRaw ? fotoRaw.split('|').map(function(s){ return s.trim(); }).filter(Boolean) : [];
       var startX    = parseFloat(p.START_X);
       var startY    = parseFloat(p.START_Y);
       var endX      = parseFloat(p.END_X);
@@ -805,7 +890,7 @@ function zoomKeJalan(feature) {
       tampilkanAtribut('🛣️ ' + nama, rowData, 'jalan', {
         startX: startX, startY: startY,
         endX: endX, endY: endY,
-        foto: foto
+        fotoList: fotoList
       });
     }
   } catch(e) { console.warn('zoomKeJalan error:', e); }
