@@ -909,3 +909,132 @@ html, body {
     width: auto;
   }
 }
+
+/* ============================================================
+   CAROUSEL FOTO (multi-foto per ruas)
+   ============================================================ */
+.jc-foto-count {
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--text-muted);
+  margin-left: 4px;
+}
+
+.jc-carousel {
+  position: relative;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #f0f4f8;
+}
+
+.jc-carousel-track {
+  position: relative;
+  width: 100%;
+}
+
+.jc-carousel-slide {
+  display: none;
+}
+
+.jc-carousel-slide.active {
+  display: block;
+}
+
+.jc-carousel .jc-foto-img {
+  border-radius: 0;
+  border: none;
+  margin: 0;
+}
+
+/* Tombol prev/next */
+.jc-carousel-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(15,41,66,.55);
+  border: none;
+  color: #fff;
+  font-size: 22px;
+  width: 30px;
+  height: 44px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+  transition: background .15s;
+  border-radius: 4px;
+}
+
+.jc-carousel-btn:hover { background: rgba(15,41,66,.85); }
+.jc-carousel-btn.prev  { left: 0; border-radius: 0 4px 4px 0; }
+.jc-carousel-btn.next  { right: 0; border-radius: 4px 0 0 4px; }
+
+/* Dots indikator */
+.jc-carousel-dots {
+  display: flex;
+  justify-content: center;
+  gap: 5px;
+  padding: 6px 0 4px;
+  background: #f8fafb;
+}
+
+.jc-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #c8d4e0;
+  cursor: pointer;
+  transition: background .2s, transform .2s;
+}
+
+.jc-dot.active {
+  background: var(--brand-mid);
+  transform: scale(1.25);
+}
+
+/* Counter x/n */
+.jc-carousel-counter {
+  text-align: center;
+  font-size: 10.5px;
+  color: var(--text-muted);
+  padding-bottom: 5px;
+  background: #f8fafb;
+  font-family: var(--mono);
+}
+
+/* ── LIGHTBOX update: navigasi ─────────────────────────────── */
+.lb-nav {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: rgba(0,0,0,.45);
+  border-radius: 30px;
+  padding: 6px 18px;
+}
+
+.lb-btn {
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 28px;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0 4px;
+  opacity: .85;
+  transition: opacity .15s;
+}
+
+.lb-btn:hover { opacity: 1; }
+
+.lb-counter {
+  color: #fff;
+  font-size: 13px;
+  font-family: var(--mono);
+  min-width: 50px;
+  text-align: center;
+}
