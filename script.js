@@ -351,8 +351,8 @@ fetch('JALAN KELURAHAN.json')
         var jenis     = (p.JENIS_JALA  || '-').trim();
         var kel       = (p.KELURAHAN   || p.DESA_KELUR || '-').trim();
         var kec       = (p.KECAMATAN   || '-').trim();
-        var panjang   = parseFloat(p.PANJANG_JA || 0) || 0;
-        var lebar     = (p.LEBAR_JALA  || p.LEBAR || '').toString().trim();
+        var panjang   = parseFloat(p.PANJANG_JLN || 0) || 0;
+        var lebar     = (p.LEBAR_JLN  || p.LEBAR || '').toString().trim();
         var permukaan = (p.PERMUKAAN   || p.JENIS_PERM || '').toString().trim();
         var ket       = (p.KETERANGAN  || p.KET || '').toString().trim();
         var fotoRaw   = (p.FOTO || p.PHOTO || p.GAMBAR || '').toString().trim();
