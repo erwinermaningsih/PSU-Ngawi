@@ -1,5 +1,5 @@
 /* ============================================================
-   SIGAP PSU Jalan – Dinas Perumahan Rakyat Kab. Ngawi
+   WebGIS PSU Jalan – Dinas Perumahan Rakyat Kab. Ngawi
    Design: Professional Government GIS Dashboard
    Koreksi & Penyempurnaan
    ============================================================ */
@@ -181,6 +181,11 @@ html, body {
 .leaflet-bottom.leaflet-right {
   bottom: 10px !important;
   right: 200px !important; /* geser ke kiri dari layer panel */
+}
+
+/* Geser legenda ke atas agar tidak menutupi tombol basemap switcher */
+.leaflet-bottom.leaflet-left {
+  bottom: 180px !important;
 }
 
 /* ============ INFO PANEL ============ */
@@ -439,13 +444,6 @@ html, body {
   height: 14px;
   border-radius: 3px;
   border: 2px solid;
-  flex-shrink: 0;
-  display: inline-block;
-}
-.lg-basemap-icon {
-  width: 28px;
-  text-align: center;
-  font-size: 14px;
   flex-shrink: 0;
   display: inline-block;
 }
