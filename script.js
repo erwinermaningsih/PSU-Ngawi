@@ -156,8 +156,7 @@ function tampilkanAtribut(judul, rows, tipe, extra) {
       { icon: '📍', label: 'Kelurahan',   row: kelRow },
       { icon: '🏘️', label: 'Kecamatan',  row: kecamatanRow },
       { icon: '🏗️', label: 'Jenis Jalan', row: jenisRow },
-      { icon: '🛣️', label: 'Permukaan',   row: permukaanRow },
-      { icon: '↔️', label: 'Lebar',       row: lebarRow }
+      { icon: '🛣️', label: 'Permukaan',   row: permukaanRow }
     ];
 
     var adaInfo = false;
@@ -718,6 +717,10 @@ legend.addTo(map);
 function buildLegendHTML(kelurahanFeatures) {
   var html = [
     '<h4>Legenda</h4>',
+    '<div class="legend-section">Basemap</div>',
+    '<div class="legend-row"><span class="lg-basemap-icon">🛰️</span> Satelit</div>',
+    '<div class="legend-row"><span class="lg-basemap-icon">🗺️</span> OpenStreetMap</div>',
+    '<div class="legend-row"><span class="lg-basemap-icon">⛰️</span> Topografi</div>',
     '<div class="legend-section">Kondisi Jalan</div>',
     '<div class="legend-row"><span class="lg-line" style="background:#27ae60"></span> Baik</div>',
     '<div class="legend-row"><span class="lg-line" style="background:#f9ca24"></span> Rusak Ringan</div>',
