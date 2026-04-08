@@ -156,7 +156,9 @@ function tampilkanAtribut(judul, rows, tipe, extra) {
       { icon: '📍', label: 'Kelurahan',   row: kelRow },
       { icon: '🏘️', label: 'Kecamatan',  row: kecamatanRow },
       { icon: '🏗️', label: 'Jenis Jalan', row: jenisRow },
-      { icon: '🛣️', label: 'Permukaan',   row: permukaanRow }
+      { icon: '🛣️', label: 'Permukaan',   row: permukaanRow },
+      { icon: '↔️', label: 'Lebar',       row: lebarRow },
+      { icon: '📏', label: 'Panjang',     row: panjangRow }
     ];
 
     var adaInfo = false;
@@ -172,7 +174,7 @@ function tampilkanAtribut(judul, rows, tipe, extra) {
 
     if (!adaInfo) {
       rows.forEach(function(r) {
-        if (r.key === 'Kondisi' || r.key === 'Nama Ruas' || r.key === 'Panjang') return;
+        if (r.key === 'Kondisi' || r.key === 'Nama Ruas') return;
         var valHtml = r.isHtml ? r.val : escapeHtml(r.val);
         html += '<div class="jc-row">'
               + '<span class="jc-row-icon">•</span>'
@@ -182,23 +184,6 @@ function tampilkanAtribut(judul, rows, tipe, extra) {
       });
     }
 
-    var lebarMetricRow = getRow('Lebar');
-    if (panjangRow && panjangRow.val && panjangRow.val !== '-') {
-      html += '<div class="jc-metrics-row">';
-      html += '<div class="jc-metric-box" style="border-color:' + accentColor + '30">'
-            + '<span class="jc-metric-icon">📏</span>'
-            + '<span class="jc-metric-label">Panjang</span>'
-            + '<span class="jc-metric-val" style="color:' + accentColor + '">' + escapeHtml(panjangRow.val) + '</span>'
-            + '</div>';
-      if (lebarMetricRow && lebarMetricRow.val && lebarMetricRow.val !== '-') {
-        html += '<div class="jc-metric-box" style="border-color:' + accentColor + '30">'
-              + '<span class="jc-metric-icon">↔️</span>'
-              + '<span class="jc-metric-label">Lebar</span>'
-              + '<span class="jc-metric-val" style="color:' + accentColor + '">' + escapeHtml(lebarMetricRow.val) + '</span>'
-              + '</div>';
-      }
-      html += '</div>';
-    }
 
     // ── KOORDINAT AWAL & AKHIR ─────────────────────────────────────
     if (extra) {
@@ -717,10 +702,6 @@ legend.addTo(map);
 function buildLegendHTML(kelurahanFeatures) {
   var html = [
     '<h4>Legenda</h4>',
-    '<div class="legend-section">Basemap</div>',
-    '<div class="legend-row"><span class="lg-basemap-icon">🛰️</span> Satelit</div>',
-    '<div class="legend-row"><span class="lg-basemap-icon">🗺️</span> OpenStreetMap</div>',
-    '<div class="legend-row"><span class="lg-basemap-icon">⛰️</span> Topografi</div>',
     '<div class="legend-section">Kondisi Jalan</div>',
     '<div class="legend-row"><span class="lg-line" style="background:#27ae60"></span> Baik</div>',
     '<div class="legend-row"><span class="lg-line" style="background:#f9ca24"></span> Rusak Ringan</div>',
