@@ -1,0 +1,31 @@
+name: Auto Update GeoJSON Photo
+
+on:
+  push:
+    paths:
+      - 'foto_jalan/**' # Berjalan otomatis jika ada foto baru di folder ini
+
+jobs:
+  update-json:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Run Update Script
+        run: |
+          python update_foto_jalan.py
+          mv "JALAN KELURAHAN_updated.json" "JALAN KELURAHAN.json"
+
+      - name: Commit and Push changes
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add "JALAN KELURAHAN.json"
+          git commit -m "Auto-update foto jalan" || exit 0
+          git push
