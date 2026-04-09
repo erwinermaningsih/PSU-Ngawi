@@ -447,6 +447,15 @@ html, body {
   flex-shrink: 0;
   display: inline-block;
 }
+/* Garis putus-putus untuk batas kelurahan */
+.lg-dashed {
+  width: 28px;
+  height: 0;
+  border-top: 3px dashed;
+  flex-shrink: 0;
+  display: inline-block;
+  vertical-align: middle;
+}
 
 /* ============ TOOLTIP JALAN ============ */
 .jalan-tooltip.leaflet-tooltip {
@@ -1079,7 +1088,7 @@ html, body {
 
 .bk-row {
   display: grid;
-  grid-template-columns: 12px 1fr auto auto auto;
+  grid-template-columns: 22px 1fr auto;
   align-items: center;
   gap: 8px;
   font-size: 12.5px;
@@ -1091,10 +1100,15 @@ html, body {
 }
 
 .bk-dot {
-  width: 10px;
-  height: 10px;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  line-height: 1;
 }
 
 .bk-label {
@@ -1103,14 +1117,16 @@ html, body {
 }
 
 .bk-count {
-  color: var(--muted);
-  font-size: 11.5px;
+  font-weight: 700;
+  font-size: 12.5px;
+  color: var(--text);
 }
 
 .bk-panjang {
   font-family: var(--mono);
-  font-size: 11.5px;
-  color: var(--muted);
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--text);
 }
 
 .bk-pct {
@@ -1157,13 +1173,22 @@ html, body {
 
 /* ── LEGENDA FASILITAS UMUM (grid rapi) ─────────────────────────── */
 .lg-fasum-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 5px 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
   margin-top: 4px;
 }
 
-.lg-fasum-item {
+/* Alias untuk list layout (dipakai di buildLegendHTML baru) */
+.lg-fasum-list {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-top: 4px;
+}
+
+.lg-fasum-item,
+.lg-fasum-item-row {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -1191,11 +1216,6 @@ html, body {
   font-weight: 600;
   color: var(--text-main);
   line-height: 1.2;
-}
-
-/* Fasilitas Kesehatan spans full width (odd one out in 2-col grid) */
-.lg-fasum-item:nth-child(3) {
-  grid-column: 1 / -1;
 }
 
 /* ── BREAKDOWN FASILITAS UMUM ─────────────────────────────────────── */
