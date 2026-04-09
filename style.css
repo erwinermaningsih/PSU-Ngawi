@@ -298,7 +298,7 @@ html, body {
 /* ============ BASEMAP SWITCHER ============ */
 #basemap-switcher {
   position: absolute;
-  bottom: 44px;
+  bottom: 40px;
   left: 14px;
   display: flex;
   flex-direction: column;
