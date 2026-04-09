@@ -533,15 +533,26 @@ Papa.parse('fasilitas_umum.csv', {
 
 // ── STAT CHIP KONDISI BREAKDOWN ────────────────────────────────────
 function setupStatChipClick() {
-  // jalan & panjang chips → rincian kondisi jalan
-  document.querySelectorAll('.stat-chip[data-stat="jalan"], .stat-chip[data-stat="panjang"]').forEach(function(chip) {
-    chip.style.cursor = 'pointer';
-    chip.setAttribute('title', 'Klik untuk lihat rincian kondisi jalan');
-    chip.addEventListener('click', function(e) {
+  // jalan chip → kondisi jalan + jumlah segmen
+  var chipJalan = document.querySelector('.stat-chip[data-stat="jalan"]');
+  if (chipJalan) {
+    chipJalan.style.cursor = 'pointer';
+    chipJalan.setAttribute('title', 'Klik untuk lihat kondisi & jumlah segmen jalan');
+    chipJalan.addEventListener('click', function(e) {
       e.stopPropagation();
-      tampilkanBreakdownKondisi();
+      tampilkanBreakdownSegmen();
     });
-  });
+  }
+  // panjang chip → kondisi jalan + total panjang
+  var chipPanjang = document.querySelector('.stat-chip[data-stat="panjang"]');
+  if (chipPanjang) {
+    chipPanjang.style.cursor = 'pointer';
+    chipPanjang.setAttribute('title', 'Klik untuk lihat kondisi & total panjang jalan');
+    chipPanjang.addEventListener('click', function(e) {
+      e.stopPropagation();
+      tampilkanBreakdownPanjang();
+    });
+  }
   // fasum chip → rincian fasilitas umum
   var chipFasum = document.querySelector('.stat-chip[data-stat="fasum"]');
   if (chipFasum) {
@@ -554,7 +565,8 @@ function setupStatChipClick() {
   }
 }
 
-function tampilkanBreakdownKondisi() {
+// Chip "Segmen Jalan" → kondisi jalan + jumlah segmen saja
+function tampilkanBreakdownSegmen() {
   var defs = [
     { key: 'BAIK',         label: 'Baik',         color: '#27ae60', icon: '✅' },
     { key: 'RUSAK RINGAN', label: 'Rusak Ringan',  color: '#f9ca24', icon: '🟡' },
@@ -563,8 +575,6 @@ function tampilkanBreakdownKondisi() {
   ];
 
   var totalSeg = jalanStats.count || 0;
-  var totalPjg = jalanStats.totalPanjang || 0;
-
   var html = '<div class="breakdown-wrap">';
 
   // Bar chart proporsi
@@ -578,36 +588,84 @@ function tampilkanBreakdownKondisi() {
   });
   html += '</div>';
 
-  // Tabel rincian
+  // Tabel: kondisi + jumlah segmen saja
   html += '<div class="bk-table">';
   defs.forEach(function(d) {
-    var jml   = jalanStats.kondisi[d.key] || 0;
-    var pjg   = jalanStats.panjangKondisi[d.key] || 0;
-    var pct   = totalSeg > 0 ? (jml / totalSeg * 100).toFixed(1) : '0.0';
-    var pjgTxt = pjg >= 1000 ? (pjg/1000).toFixed(2) + ' km' : pjg.toFixed(0) + ' m';
+    var jml = jalanStats.kondisi[d.key] || 0;
     html += '<div class="bk-row">'
           + '<span class="bk-dot" style="background:' + d.color + '"></span>'
           + '<span class="bk-label">' + d.label + '</span>'
           + '<span class="bk-count">' + jml + ' segmen</span>'
-          + '<span class="bk-panjang">' + pjgTxt + '</span>'
-          + '<span class="bk-pct">' + pct + '%</span>'
           + '</div>';
   });
   html += '</div>';
 
-  // Ringkasan total
+  // Total segmen
+  html += '<div class="bk-total">'
+        + '<span>Total Segmen Jalan</span>'
+        + '<span><b>' + totalSeg + ' segmen</b></span>'
+        + '</div>';
+
+  html += '</div>';
+
+  document.getElementById('info-title').textContent = '🛣️ Kondisi & Jumlah Segmen Jalan';
+  document.getElementById('info-content').innerHTML = html;
+  _showInfoPanel();
+}
+
+// Chip "Total Panjang" → kondisi jalan + total panjang saja
+function tampilkanBreakdownPanjang() {
+  var defs = [
+    { key: 'BAIK',         label: 'Baik',         color: '#27ae60', icon: '✅' },
+    { key: 'RUSAK RINGAN', label: 'Rusak Ringan',  color: '#f9ca24', icon: '🟡' },
+    { key: 'RUSAK SEDANG', label: 'Rusak Sedang',  color: '#f0932b', icon: '🟠' },
+    { key: 'RUSAK BERAT',  label: 'Rusak Berat',   color: '#e74c3c', icon: '🔴' }
+  ];
+
+  var totalPjg = jalanStats.totalPanjang || 0;
+  var html = '<div class="breakdown-wrap">';
+
+  // Bar chart proporsi berdasarkan panjang
+  html += '<div class="bk-bar-stack">';
+  defs.forEach(function(d) {
+    var pjg = jalanStats.panjangKondisi[d.key] || 0;
+    var pct = totalPjg > 0 ? (pjg / totalPjg * 100) : 0;
+    if (pct > 0) {
+      html += '<div class="bk-bar-seg" style="width:' + pct.toFixed(1) + '%;background:' + d.color + '" '
+            + 'title="' + d.label + ': ' + pct.toFixed(1) + '%"></div>';
+    }
+  });
+  html += '</div>';
+
+  // Tabel: kondisi + total panjang saja
+  html += '<div class="bk-table">';
+  defs.forEach(function(d) {
+    var pjg    = jalanStats.panjangKondisi[d.key] || 0;
+    var pjgTxt = pjg >= 1000 ? (pjg/1000).toFixed(2) + ' km' : pjg.toFixed(0) + ' m';
+    html += '<div class="bk-row">'
+          + '<span class="bk-dot" style="background:' + d.color + '"></span>'
+          + '<span class="bk-label">' + d.label + '</span>'
+          + '<span class="bk-panjang">' + pjgTxt + '</span>'
+          + '</div>';
+  });
+  html += '</div>';
+
+  // Total panjang
   var totalPjgTxt = totalPjg >= 1000 ? (totalPjg/1000).toFixed(2) + ' km' : totalPjg.toFixed(0) + ' m';
   html += '<div class="bk-total">'
-        + '<span>Total: <b>' + totalSeg + '</b> segmen</span>'
+        + '<span>Total Panjang Jalan</span>'
         + '<span><b>' + totalPjgTxt + '</b></span>'
         + '</div>';
 
   html += '</div>';
 
-  document.getElementById('info-title').textContent = '📊 Rincian Kondisi Jalan';
+  document.getElementById('info-title').textContent = '📏 Kondisi & Total Panjang Jalan';
   document.getElementById('info-content').innerHTML = html;
   _showInfoPanel();
 }
+
+// Tetap ada untuk backward compatibility (tidak dipakai lagi)
+function tampilkanBreakdownKondisi() { tampilkanBreakdownSegmen(); }
 
 // ── BREAKDOWN FASILITAS UMUM ───────────────────────────────────────
 function tampilkanBreakdownFasum() {
@@ -622,30 +680,14 @@ function tampilkanBreakdownFasum() {
   var total = fasumStats.total || 0;
   var html = '<div class="breakdown-wrap">';
 
-  // Bar stack
-  html += '<div class="bk-bar-stack">';
+  // Tabel sederhana: ikon + nama kategori + jumlah unit saja
+  html += '<div class="bk-table">';
   defs.forEach(function(d) {
     var jml = fasumStats.kategori[d.key] || 0;
-    var pct = total > 0 ? (jml / total * 100) : 0;
-    if (pct > 0) {
-      html += '<div class="bk-bar-seg" style="width:' + pct.toFixed(1) + '%;background:' + d.color + '" '
-            + 'title="' + escapeHtml(d.key) + ': ' + jml + '"></div>';
-    }
-  });
-  html += '</div>';
-
-  // Grid kartu per kategori
-  html += '<div class="bk-fasum-grid">';
-  defs.forEach(function(d) {
-    var jml = fasumStats.kategori[d.key] || 0;
-    var pct = total > 0 ? (jml / total * 100).toFixed(0) : '0';
-    html += '<div class="bk-fasum-card" style="border-left:3px solid ' + d.color + '">'
-          + '<span class="bk-fasum-icon" style="background:' + d.color + '22">' + d.icon + '</span>'
-          + '<div class="bk-fasum-info">'
-          + '<span class="bk-fasum-name">' + escapeHtml(d.key) + '</span>'
-          + '<span class="bk-fasum-count" style="color:' + d.color + '">' + jml + ' unit</span>'
-          + '</div>'
-          + '<span class="bk-fasum-pct">' + pct + '%</span>'
+    html += '<div class="bk-row">'
+          + '<span class="bk-dot" style="background:' + d.color + '">' + d.icon + '</span>'
+          + '<span class="bk-label">' + escapeHtml(d.key) + '</span>'
+          + '<span class="bk-count" style="color:' + d.color + '">' + jml + ' unit</span>'
           + '</div>';
   });
   html += '</div>';
@@ -658,7 +700,7 @@ function tampilkanBreakdownFasum() {
 
   html += '</div>';
 
-  document.getElementById('info-title').textContent = '🏫 Rincian Fasilitas Umum';
+  document.getElementById('info-title').textContent = '🏫 Jumlah Fasilitas Umum';
   document.getElementById('info-content').innerHTML = html;
   _showInfoPanel();
 }
@@ -720,7 +762,7 @@ function buildLegendHTML(kelurahanFeatures) {
     var c = KELURAHAN_COLORS[nama] || { color: '#7f8c8d', fill: '#95a5a6' };
     html.push(
       '<div class="legend-row">' +
-      '<span class="lg-poly" style="border-color:' + c.color + ';background:' + c.fill + '22"></span> ' +
+      '<span class="lg-dashed" style="border-top-color:' + c.color + '"></span> ' +
       escapeHtml(nama) +
       '</div>'
     );
@@ -734,10 +776,10 @@ function buildLegendHTML(kelurahanFeatures) {
     { icon: '🏢', label: 'Perkantoran',         color: '#2980b9' }
   ];
   html.push('<div class="legend-section">Fasilitas Umum</div>');
-  html.push('<div class="lg-fasum-grid">');
+  html.push('<div class="lg-fasum-list">');
   fasumDefs.forEach(function(f) {
     html.push(
-      '<div class="lg-fasum-item">' +
+      '<div class="lg-fasum-item-row">' +
       '<span class="lg-fasum-icon" style="background:' + f.color + '22;border-color:' + f.color + '40">' + f.icon + '</span>' +
       '<span class="lg-fasum-label">' + f.label + '</span>' +
       '</div>'
