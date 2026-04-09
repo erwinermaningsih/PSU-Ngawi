@@ -288,7 +288,7 @@ var jalanStats = {
   panjangKondisi: { 'BAIK': 0, 'RUSAK RINGAN': 0, 'RUSAK SEDANG': 0, 'RUSAK BERAT': 0 }
 };
 
-fetch('JALAN KELURAHAN.geojson')
+fetch('JALAN KELURAHAN.json')
   .then(function (r) {
     if (!r.ok) throw new Error('HTTP ' + r.status);
     return r.json();
@@ -386,7 +386,7 @@ fetch('JALAN KELURAHAN.geojson')
     checkLoaded();
   })
   .catch(function (err) {
-    console.error('Gagal memuat JALAN KELURAHAN.geojson:', err);
+    console.error('Gagal memuat JALAN KELURAHAN.json:', err);
     tampilkanNotif('Gagal memuat data jalan.', 'error');
     checkLoaded();
   });
